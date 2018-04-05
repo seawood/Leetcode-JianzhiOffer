@@ -25,6 +25,13 @@
   - C[i]=C[i-1]+C[i-2],最后一次可以走两步或者走一步
   - 初始值C[1]=1,C[2]=2
   - 代码：https://leetcode.com/problems/climbing-stairs/description/
+ 
+
+### 746.Min Cost Climbing Stairs
+  - C[i]为对于爬到第i阶台阶的最小代价，C[i]=min(C[i-1)+A[i],C[i-2]+A[i])
+  - 初始值：C[0]=A[0],C[1]=A[1]
+  - 爬到顶端的最小代价为min(C[i],C[i-1])
+  - 代码：https://leetcode.com/problems/min-cost-climbing-stairs/description/
   
 ### 5.Longest Palindromic Substring
 
