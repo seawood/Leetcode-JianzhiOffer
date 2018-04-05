@@ -20,8 +20,12 @@
 ### 121.Best Time to Buy and Cell Stock
   - min[i]表示输入A[0,i]所有数中的最小值，C[i]表示输入A[0,i]能获得的最大收益，则C[i+1]=max(C[i],A[i+1]-min[i])
   - 代码：https://leetcode.com/problems/best-time-to-buy-and-sell-stock/description/
-  
 
+### 70.Climbing Stairs
+  - C[i]=C[i-1]+C[i-2],最后一次可以走两步或者走一步
+  - 初始值C[1]=1,C[2]=2
+  - 代码：https://leetcode.com/problems/climbing-stairs/description/
+  
 ### 5.Longest Palindromic Substring
 
 ### 10.Regular Expression Matching
