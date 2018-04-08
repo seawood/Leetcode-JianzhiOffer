@@ -33,6 +33,18 @@
   - 爬到顶端的最小代价为min(C[i],C[i-1])
   - 代码：https://leetcode.com/problems/min-cost-climbing-stairs/description/
   
+### 64.Minimum Path Sum
+  - Min[i][j]=min(Min[i-1][j],Min[i][j-1])
+  - 注意先初始化Min[0][j]和Min[i][0]
+  - 代码：https://leetcode.com/problems/minimum-path-sum/description/
+  
+### 63.Unique Paths II
+   - 如果A[i,j]=0,Sum[i,j]=Sum[i-1][j]+Sum[i][j-1];如果A[i][j]=1,Sum[i,j]=0
+   - 注意先初始化Sum[0,j]和Sum[i,0]
+   - 代码：https://leetcode.com/problems/unique-paths-ii/description/
+  
+  
+  
 ### 5.Longest Palindromic Substring
 
 ### 10.Regular Expression Matching
