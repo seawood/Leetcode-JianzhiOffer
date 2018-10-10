@@ -137,3 +137,25 @@ bool isIsomorphic(string s, string t)
 	}
 	return i == len1 && j == len2 ? true : false;
 }
+//187
+vector<string> findRepeatedDnaSequences(string s)
+{
+	unordered_map<string, int> record;
+	int len = s.size();
+	vector<string> re;
+	for (int i = 0; i < len - 9; i++)
+	{
+		string temp(s.begin() + i, s.begin() + i + 10);
+		if (record.find(temp) == record.end())
+			record[temp] = 1;
+		else if (record[temp] == 1)
+		{
+			re.push_back(temp);
+			record[temp]++;
+		}
+		else
+			record[temp]++;
+
+	}
+	return re;
+}
