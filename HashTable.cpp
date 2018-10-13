@@ -159,7 +159,7 @@ vector<string> findRepeatedDnaSequences(string s)
 	}
 	return re;
 }
-//204¶òÀ­¶àÈûÉ¸·¨
+//204 Eratosthenes sieve
 int countPrimes(int n)
 {
 	vector<bool> record(n, false);
