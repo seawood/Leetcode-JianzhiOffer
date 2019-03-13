@@ -20,29 +20,51 @@ Date:2019.2.20
 #include <list>
 using namespace std;
 
+/*-------------------------数组----------------------------*/
 
 //面试题3：数组中的重复数字
-bool duplicate(int numbers[], int length, int* duplication) {
-	for (int i = 0; i < length; ++i)
-	{
-		while (i != numbers[i])
-		{
-			if (numbers[i] == numbers[numbers[i]])
-			{
-				*duplication = numbers[i];
+//修改原数组，时间复杂度O(n),空间复杂度O(1)
+bool duplicate1(vector<int> numbers, int* duplication) {
+	int len = numbers.size();
+	for (int i = 0; i < len; ++i) {
+		while (i != numbers[i]) {
+			int a = numbers[i], b = numbers[numbers[i]];
+			if (a == b) {
+				*duplication = a;
 				return true;
 			}
 			else {
-				int temp = numbers[numbers[i]];
-				numbers[numbers[i]] = numbers[i];
-				numbers[i] = temp;
+				numbers[numbers[i]] = a;
+				numbers[i] = b;
 			}
 		}
 	}
 	return false;
 }
+//不修改原数组，时间复杂度O(nlogn),空间复杂度O(1)
+int countNum(const vector<int> &numbers, const int &len, const int& left, const int& right) {
+	int result = 0;
+	for (int i = 0; i < len; ++i) {
+		if (numbers[i] >= left&&numbers[i] <= right)
+			result++;
+	}
+	return result;
+}
+int duplicate2(const vector<int> &numbers) {
+	int len = numbers.size();
+	int left = 1, right = len - 1, mid = (left + right) / 2;
+	while (left<right) {
+		if (countNum(numbers, len, left, mid) > mid - left + 1)
+			right = mid;
+		else 
+			left = mid+1;
+		mid = (left + right) / 2;
+	}
+	return mid;
+}
 //面试题4：二维数组中的查找
-bool Find(int target, vector<vector<int> > array) {
+//从右上角开始找
+bool Find(const int &target, const vector<vector<int> > &array) {
 	int row = array.size();
 	if (row == 0)
 		return false;
@@ -59,7 +81,11 @@ bool Find(int target, vector<vector<int> > array) {
 	}
 	return false;
 }
+
+/*-------------------------字符串----------------------------*/
+
 //面试题5：替换空格
+//length表示str指向的内存可以存放char的个数。从后向前复制，用两个指针
 void replaceSpace(char *str, int length) {
 	if (str == nullptr || length <= 0)
 		return;
@@ -85,12 +111,19 @@ void replaceSpace(char *str, int length) {
 		oldp--;
 	}
 }
+
+/*-------------------------链表----------------------------*/
+
 struct ListNode {
 	int val;
 	ListNode* next;
+	ListNode(int v):val(v),next(nullptr){}
 };
 //往链表的末尾添加一个节点
+//当原来的链表为空的时候需要修改pHead。把指针作为参数传入的是指针的副本，使函数对指针的修改可以传出来要用指针的指针
 void AddToTail(ListNode** pHead, int value) {
+	if (pHead == nullptr)
+		return;
 	ListNode* pNew = new ListNode();
 	pNew->val = value;
 	pNew->next = nullptr;
@@ -105,6 +138,7 @@ void AddToTail(ListNode** pHead, int value) {
 }
 
 //找到链表中含某值的节点并删除
+//可能删除头结点，所以传入指针的指针
 void RemoveNode(ListNode** pHead, int value) {
 	if (pHead == nullptr || *pHead == nullptr)
 		return;
@@ -128,6 +162,7 @@ void RemoveNode(ListNode** pHead, int value) {
 	}
 }
 //面试题6：从尾到头打印链表
+//基于栈
 vector<int> printListFromTailToHead1(ListNode* head) {
 	stack<ListNode*> temp;
 	ListNode* walk = head;
@@ -144,16 +179,17 @@ vector<int> printListFromTailToHead1(ListNode* head) {
 	return re;
 }
 
+//递归（递归在本质上就是一个栈结构）
 vector<int> printListFromTailToHead2(ListNode* head) {
-	ListNode* walk = head;
 	vector<int> re;
-	if (walk != nullptr)
+	if (head != nullptr)
 	{
-		re = printListFromTailToHead2(walk->next);
-		re.push_back(walk->val);
+		re = printListFromTailToHead2(head->next);
+		re.push_back(head->val);
 	}
 	return re;
 }
+
 struct TreeNode {
 	int val;
 	TreeNode* left;
@@ -437,12 +473,13 @@ int maxProductAfterCutting1(int length) {
 }
 
 //面试题15：二进制中1的个数
+//把1个整数减去1再与原来的数做&运算，会把最右边的1变成0，整数中有几个1就循环几次
 int  NumberOf1(int n) {
 	int count = 0;
 	while (n)
 	{
 		count++;
-		n = (n - 1)&n;
+		n = (n - 1)&n;  
 	}
 	return count;
 }
