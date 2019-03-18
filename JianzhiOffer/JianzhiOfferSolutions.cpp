@@ -190,32 +190,130 @@ vector<int> printListFromTailToHead2(ListNode* head) {
 	return re;
 }
 
+//面试题22：链表中倒数第k个节点
+ListNode* FindKthToTail(ListNode* pListHead, unsigned int k) {
+	if (pListHead == nullptr || k <= 0)  // 鲁棒性
+		return nullptr;
+	ListNode* fast = pListHead;
+	for (int i = 1; i < k; i++) {
+		if (fast->next == nullptr)  // 可能少于k个节点
+			return nullptr;
+		fast = fast->next;
+	}
+	ListNode* slow = pListHead;
+	while (fast->next != nullptr) {
+		fast = fast->next;
+		slow = slow->next;
+	}
+	return slow;
+}
+
+//面试题23:链表中环的入口节点
+ListNode* Meet(ListNode* pHead) {
+	ListNode* fast = pHead, *slow = pHead;
+	while (fast->next != nullptr && fast->next->next != nullptr) {
+		fast = fast->next->next;
+		slow = slow->next;
+		if (slow == fast)
+			return fast;
+	}
+	return nullptr;
+}
+ListNode* EntryNodeOfLoop(ListNode* pHead) {
+	if (pHead == nullptr)
+		return nullptr;
+	ListNode* meetNode = Meet(pHead);  // 1.确定有环：两个指针，快指针步长是慢指针的两倍
+	if (meetNode == nullptr)
+		return nullptr;
+	ListNode* walk = meetNode;
+	int loopLen = 0;
+	do {
+		walk = walk->next;
+		loopLen++;
+	} while (walk != meetNode);  // 2.确定环的长度
+	walk = pHead;
+	for (int i = 0; i < loopLen; ++i)
+		walk = walk->next;
+	ListNode* loopEntry = pHead;
+	while (loopEntry != walk) {
+		walk = walk->next;
+		loopEntry = loopEntry->next;  // 3.找到环入口：两个指针，一个指针先走环的长度
+	}
+	return loopEntry;
+}
+
+//面试题24：反转链表
+ListNode* ReverseList(ListNode* pHead) {
+	if (pHead == nullptr)
+		return nullptr;
+	ListNode* pCurrent = pHead;
+	ListNode* pPre = nullptr;
+	ListNode* newHead = nullptr;
+	while (pCurrent != nullptr) {
+		ListNode* pNext = pCurrent->next;
+		if (pNext == nullptr)
+			newHead = pCurrent;
+		pCurrent->next = pPre;
+		pPre = pCurrent;
+		pCurrent = pNext;
+	}
+	return newHead;
+}
+
+//面试题25：合并两个排序的链表
+ListNode* Merge(ListNode* pHead1, ListNode* pHead2) {
+	if (pHead1 == nullptr)
+		return pHead2;
+	if (pHead2 == nullptr)
+		return pHead1;
+	ListNode* newHead = nullptr;
+	if (pHead1->val <= pHead2->val) {
+		newHead = pHead1;
+		newHead->next = Merge(pHead1->next, pHead2);
+	} else {
+		newHead = pHead2;
+		newHead->next = Merge(pHead1, pHead2->next);
+	}
+	return newHead;
+}
+
+/*-------------------------二叉树----------------------------*/
 struct TreeNode {
 	int val;
 	TreeNode* left;
 	TreeNode* right;
 	TreeNode(int v) :val(v), left(nullptr), right(nullptr) {}
 };
-//面试题7：重建二叉树(TODO）
-TreeNode* reConstructBinaryTree(vector<int> pre, vector<int> vin) {
-	if (pre.size() == 0 || vin.size() == 0)
-		return nullptr;
-	TreeNode root(pre[0]);
-	int leftLen = 0;
-	while (vin[leftLen] != pre[0])
-		leftLen++;
-	if (leftLen != 0) {
-		vector<int> preLeft(pre.begin() + 1, pre.begin() + leftLen + 1);
-		vector<int> preRight(pre.begin() + leftLen + 1, pre.end());
-		vector<int> vinLeft(vin.begin(), vin.begin() + leftLen);
-		vector<int> vinRight(vin.begin() + leftLen + 1, vin.end());
-		root.left = reConstructBinaryTree(preLeft, vinLeft);
-		root.right = reConstructBinaryTree(preRight, vinRight);
+
+//面试题7：重建二叉树
+//前序遍历，中序遍历：根节点在前序遍历的首位，找出根节点在中序遍历中所在的位置
+TreeNode* reConstructBinaryTreeCore(vector<int>::iterator pre_begin, vector<int>::iterator pre_end,
+	vector<int>::iterator in_begin, vector<int>::iterator in_end) {  // 左闭右开区间
+	TreeNode* root = new TreeNode(*pre_begin);  // 注意：通过new分配的内存在堆上，才能返回地址。不能写成TreeNode root(*pre_begin),返回*root,因为局部变量在函数返回时被销毁
+	int length = pre_end - pre_begin;
+	if (length > 1) {
+		int left_len = 0;
+		while (left_len < length && *(in_begin + left_len) != *pre_begin) {
+			left_len++;
+		}
+		if(left_len>0)
+			root->left = reConstructBinaryTreeCore(pre_begin + 1, pre_begin + 1 + left_len, in_begin, in_begin + left_len);
+		if(length-left_len-1>0)
+			root->right = reConstructBinaryTreeCore(pre_begin + left_len + 1, pre_end, in_begin + left_len + 1, in_end);
 	}
-	return &root;
+	return root;
+}
+TreeNode* reConstructBinaryTree(vector<int> pre, vector<int> in) {
+	int length = pre.size();
+	if (length == 0)
+		return nullptr;
+	return reConstructBinaryTreeCore(pre.begin(), pre.end(), in.begin(), in.end());
 }
 
 //面试题8：二叉树的下一个节点(中序遍历）
+//case1:如果该节点有右子树,它的下一个节点就是右子树中最左子节点
+//case2.1：如果该节点没有右子树而且它是父节点的左子节点，则它的下一个节点就是它的父节点
+//case2.2: 如果该节点没有右子树而且它是父节点的右子节点，则沿着它的指向父节点的指针遍历，直到找到一个是他父节点的左子节点的节点，如果这样的节点存在，则它的父节点就是我们要找的节点
 struct TreeLinkNode {
 	int val;
 	TreeLinkNode* left;//左子节点
@@ -226,16 +324,14 @@ struct TreeLinkNode {
 TreeLinkNode* GetNext1(TreeLinkNode* pNode) {
 	if (pNode == nullptr)
 		return nullptr;
-	if (pNode->right != nullptr) {//如果有右子树
+	if (pNode->right != nullptr) {  // 如果有右子树
 		TreeLinkNode* walk = pNode->right;
 		while (walk->left != nullptr)
 			walk = walk->left;
 		return walk;
-	}
-	else if (pNode->next != nullptr && pNode->next->left == pNode) {//如果没有右子树，且为父节点的左子节点
+	} else if (pNode->next != nullptr && pNode->next->left == pNode) {  // 如果没有右子树，且为父节点的左子节点
 		return pNode->next;
-	}
-	else if (pNode->next != nullptr && pNode->next->right == pNode) {//如果没有右子树，且为父节点的右子节点
+	} else if (pNode->next != nullptr && pNode->next->right == pNode) {  // 如果没有右子树，且为父节点的右子节点
 		TreeLinkNode* walk = pNode->next;
 		while (walk->next != nullptr&&walk != walk->next->left)
 			walk = walk->next;
@@ -246,29 +342,25 @@ TreeLinkNode* GetNext1(TreeLinkNode* pNode) {
 	}
 	else
 		return nullptr;
-
 }
 //把代码重构一下
 TreeLinkNode* GetNext2(TreeLinkNode* pNode) {
 	if (pNode == nullptr)
 		return nullptr;
-	if (pNode->right != nullptr)
-	{
+	if (pNode->right != nullptr) {
 		TreeLinkNode* walk = pNode->right;
 		while (walk->left != nullptr)
 			walk = walk->left;
 		return walk;
-	}
-	else if (pNode->next != nullptr) {
+	} else if (pNode->next != nullptr) {
 		TreeLinkNode* parent = pNode->next;
 		TreeLinkNode* current = pNode;
-		while (parent != nullptr&&parent->right == current) {
+		while (parent != nullptr && parent->right == current) {
 			current = parent;
 			parent = parent->next;
 		}
 		return parent;
-	}
-	else
+	} else
 		return nullptr;
 }
 
@@ -732,94 +824,8 @@ void reOrderArray1(vector<int> &array) {
 		}
 	}
 }
-//面试题22：链表中倒数第k个节点
-ListNode* FindKthToTail(ListNode* pListHead, unsigned int k) {
-	if (pListHead == nullptr || k <= 0)//鲁棒性
-		return nullptr;
-	ListNode* fast = pListHead;
-	for (int i = 1; i < k; i++) {
-		if (fast->next == nullptr)//可能少于k个节点
-			return nullptr;
-		fast = fast->next;
-	}
-	ListNode* slow = pListHead;
-	while (fast->next != nullptr) {
-		fast = fast->next;
-		slow = slow->next;
-	}
-	return slow;
-}
-//面试题23:链表中环的入口节点
-ListNode* Meet(ListNode* pHead) {
-	ListNode* fast = pHead, *slow = pHead;
-	while (fast->next != nullptr&&fast->next->next != nullptr) {
-		fast = fast->next->next;
-		slow = slow->next;
-		if (slow == fast)
-			return fast;
-	}
-	return nullptr;
-}
-ListNode* EntryNodeOfLoop(ListNode* pHead)
-{
-	if (pHead == nullptr)
-		return nullptr;
-	ListNode* meetNode = Meet(pHead);
-	if (meetNode == nullptr)
-		return nullptr;
-	ListNode* walk = meetNode;
-	int loopLen = 0;
-	do {
-		walk = walk->next;
-		loopLen++;
-	} while (walk != meetNode);
-	walk = pHead;
-	for (int i = 0; i < loopLen; ++i)
-		walk = walk->next;
-	ListNode* loopEntry = pHead;
-	while (loopEntry != walk) {
-		walk = walk->next;
-		loopEntry = loopEntry->next;
-	}
-	return loopEntry;
-}
 
-//面试题24：反转链表
-ListNode* ReverseList(ListNode* pHead) {
-	if (pHead == nullptr)
-		return nullptr;
-	ListNode* pCurrent = pHead;
-	ListNode* pPre = nullptr;
-	ListNode* newHead = nullptr;
-	while (pCurrent != nullptr) {
-		ListNode* pNext = pCurrent->next;
-		if (pNext == nullptr)
-			newHead = pCurrent;
-		pCurrent->next = pPre;
-		pPre = pCurrent;
-		pCurrent = pNext;
-	}
-	return newHead;
-}
 
-//面试题25：合并两个排序的链表
-ListNode* Merge(ListNode* pHead1, ListNode* pHead2)
-{
-	if (pHead1 == nullptr)
-		return pHead2;
-	if (pHead2 == nullptr)
-		return pHead1;
-	ListNode* newHead = nullptr;
-	if (pHead1->val <= pHead2->val) {
-		newHead = pHead1;
-		newHead->next = Merge(pHead1->next, pHead2);
-	}
-	else {
-		newHead = pHead2;
-		newHead->next = Merge(pHead1, pHead2->next);
-	}
-	return newHead;
-}
 //面试题26：树的子结构
 bool Tree1HasTree2(TreeNode* pRoot1, TreeNode* pRoot2) {
 	if (pRoot2 == nullptr)
