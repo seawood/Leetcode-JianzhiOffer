@@ -277,6 +277,78 @@ ListNode* Merge(ListNode* pHead1, ListNode* pHead2) {
 	return newHead;
 }
 
+//面试题35：复杂链表的复制
+//复制主链，把复制节点放在原节点的后面
+//复制random链
+//拆分原链表和复制后的链表
+struct RandomListNode {
+	int label;
+	RandomListNode* next, *random;
+	RandomListNode(int x) :label(x), next(nullptr), random(nullptr) {}
+};
+void CloneMainChain(RandomListNode*  pHead) {
+	RandomListNode* pHeadWalk = pHead;
+	while (pHeadWalk) {
+		RandomListNode* newNode = new RandomListNode(pHeadWalk->label);
+		newNode->next = pHeadWalk->next;
+		newNode->random = nullptr;
+		pHeadWalk->next = newNode;
+		pHeadWalk = newNode->next;
+	}
+}
+void CloneRandom(RandomListNode* pHead) {
+	RandomListNode* pHeadWalk = pHead;
+	while (pHeadWalk) {
+		if (pHeadWalk->random)
+			pHeadWalk->next->random = pHeadWalk->random->next;
+		pHeadWalk = pHeadWalk->next->next;
+	}
+}
+RandomListNode* SplitChain(RandomListNode* pHead) {
+	if (pHead == nullptr)
+		return nullptr;
+	RandomListNode* newHead = pHead->next;
+	RandomListNode* newHeadWalk = newHead;
+	pHead->next = newHeadWalk->next;
+	pHead = pHead->next;
+	while (pHead) {
+		newHeadWalk->next = pHead->next;
+		newHeadWalk = newHeadWalk->next;
+		pHead->next = newHeadWalk->next;
+		pHead = pHead->next;
+	}
+	return newHead;
+}
+RandomListNode* Clone(RandomListNode* pHead)
+{
+	CloneMainChain(pHead);
+	CloneRandom(pHead);
+	return SplitChain(pHead);
+}
+
+//面试题36：二叉搜索树与双向链表
+void ConvertCore(TreeNode* pCurrent, TreeNode** pLastNodeInList) {
+	if (pCurrent == nullptr)
+		return;
+	if (pCurrent->left != nullptr)
+		ConvertCore(pCurrent, pLastNodeInList);
+	pCurrent->left = *pLastNodeInList;
+	if (*pLastNodeInList != nullptr)
+		(*pLastNodeInList)->right = pCurrent;
+	*pLastNodeInList = pCurrent;
+	if (pCurrent->right != nullptr)
+		ConvertCore(pCurrent, pLastNodeInList);
+}
+TreeNode* Convert(TreeNode* pRootOfTree)
+{
+	TreeNode* pLastNodeInList = nullptr;
+	ConvertCore(pRootOfTree, &pLastNodeInList);
+	TreeNode* pHeadOfList = pLastNodeInList;
+	while (pHeadOfList != nullptr&&pHeadOfList->left != nullptr)
+		pHeadOfList = pHeadOfList->left;
+	return pHeadOfList;
+}
+
 /*-------------------------二叉树----------------------------*/
 struct TreeNode {
 	int val;
@@ -1117,75 +1189,8 @@ vector<vector<int> > FindPath(TreeNode* root, int expectNumber) {
 	FindPathCore(root, expectNumber, currentSum, re, result);
 	return result;
 }
-//面试题34：复杂链表的复制
-struct RandomListNode {
-	int label;
-	RandomListNode* next, *random;
-	RandomListNode(int x) :label(x), next(nullptr), random(nullptr) {}
-};
-void CloneMainChain(RandomListNode*  pHead) {
-	RandomListNode* pHeadWalk = pHead;
-	while (pHeadWalk) {
-		RandomListNode* newNode = new RandomListNode(pHeadWalk->label);
-		newNode->next = pHeadWalk->next;
-		newNode->random = nullptr;
-		pHeadWalk->next = newNode;
-		pHeadWalk = newNode->next;
-	}
-}
-void CloneRandom(RandomListNode* pHead) {
-	RandomListNode* pHeadWalk = pHead;
-	while (pHeadWalk) {
-		if (pHeadWalk->random)
-			pHeadWalk->next->random = pHeadWalk->random->next;
-		pHeadWalk = pHeadWalk->next->next;
-	}
-}
-RandomListNode* SplitChain(RandomListNode* pHead) {
-	if (pHead == nullptr)
-		return nullptr;
-	RandomListNode* newHead = pHead->next;
-	RandomListNode* newHeadWalk = newHead;
-	pHead->next = newHeadWalk->next;
-	pHead = pHead->next;
-	while (pHead) {
-		newHeadWalk->next = pHead->next;
-		newHeadWalk = newHeadWalk->next;
-		pHead->next = newHeadWalk->next;
-		pHead = pHead->next;
-	}
 
-	return newHead;
-}
-RandomListNode* Clone(RandomListNode* pHead)
-{
-	CloneMainChain(pHead);
-	CloneRandom(pHead);
-	return SplitChain(pHead);
-}
 
-//面试题36：二叉搜索树与双向链表
-void ConvertCore(TreeNode* pCurrent, TreeNode** pLastNodeInList) {
-	if (pCurrent == nullptr)
-		return;
-	if (pCurrent->left != nullptr)
-		ConvertCore(pCurrent, pLastNodeInList);
-	pCurrent->left = *pLastNodeInList;
-	if (*pLastNodeInList != nullptr)
-		(*pLastNodeInList)->right = pCurrent;
-	*pLastNodeInList = pCurrent;
-	if (pCurrent->right != nullptr)
-		ConvertCore(pCurrent, pLastNodeInList);
-}
-TreeNode* Convert(TreeNode* pRootOfTree)
-{
-	TreeNode* pLastNodeInList = nullptr;
-	ConvertCore(pRootOfTree, &pLastNodeInList);
-	TreeNode* pHeadOfList = pLastNodeInList;
-	while (pHeadOfList != nullptr&&pHeadOfList->left != nullptr)
-		pHeadOfList = pHeadOfList->left;
-	return pHeadOfList;
-}
 //面试题37：序列化二叉树
 void SerializeCore(TreeNode* root, string& s) {
 	if (root == nullptr) {
