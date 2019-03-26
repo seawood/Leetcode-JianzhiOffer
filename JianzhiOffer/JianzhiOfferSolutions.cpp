@@ -82,6 +82,43 @@ bool Find(const int &target, const vector<vector<int> > &array) {
 	return false;
 }
 
+//面试题21：调整数组顺序使奇数位于偶数前面
+//奇数之间、偶数之间相对位置不变（类似于冒泡排序）
+void reOrderArray(vector<int> &array) {
+	int len = array.size();
+	if (len < 2)
+		return;
+	for (int i = len - 1; i > 0; --i)
+		for (int j = 0; j < i; ++j) {
+			if ((array[j] & 0x1 == 0) && (array[j + 1] & 0x1 == 1)) {
+				int temp = array[j];
+				array[j] = array[j + 1];
+				array[j + 1] = temp;
+			}
+		}
+}
+//相对次序可以变化
+//把判断函数当成一个参数传进去，有利于提高代码重用
+bool check(int n) {
+	return (n & 0x1) == 1;
+}
+void reOrderArray1(vector<int> &array, bool(*func)(int) {
+	int len = array.size();
+	if (len < 2)
+		return;
+	int left = 0, right = len - 1;
+	while (right > left) {
+		while (right > left && func(array[left]))
+			left++;
+		while (right > left && !func(array[right]))
+			right--;
+		if (right > left) {
+			int temp = array[left];
+			array[left] = array[right];
+			array[right] = temp;
+		}
+	}
+}
 /*-------------------------字符串----------------------------*/
 
 //面试题5：替换空格
@@ -111,6 +148,132 @@ void replaceSpace(char *str, int length) {
 		oldp--;
 	}
 }
+
+//面试题17：打印从1到最大的n位数
+//方法1：在字符串上模拟数字加法
+bool Increment(char* num) {
+	int len = strlen(num);
+	int flag = 0;
+	for (int i = len - 1; i >= 0; --i) {
+		int tempsum = num[i] - '0' + flag;
+		if (i == len - 1)
+			tempsum += 1;
+		if (tempsum >= 10) {
+			if (i == 0) {
+				return false;
+			}
+			else {
+				flag = tempsum / 10;
+				num[i] = '0' + tempsum % 10;
+			}
+		}
+		else {
+			num[i] = '0' + tempsum;
+			break;
+		}
+	}
+	return true;
+}
+void PrintNum(char* num) {
+	bool flag = true; //前面还没有碰到非零字符
+	int len = strlen(num);
+	for (int i = 0; i < len; ++i) {
+		if (flag && num[i] != '0')
+			flag = false;
+		if (!flag)
+			cout << num[i];
+	}
+	cout << endl;
+}
+void Print1ToMaxOfNDigits(int n) {
+	if (n <= 0)
+		return;
+	char* num = new char[n + 1];
+	memset(num, '0', n);
+	num[n] = '\0';
+	while (Increment(num))
+		PrintNum(num);
+	delete[] num;
+}
+//方法2：每一位排列组合0-9
+void Print1ToMaxOfNDigits2Core(char* num, int len, int index) { //第index位已经设置好了
+	if (index == len - 1) {
+		PrintNum(num);
+		return;
+	}
+	for (int i = 0; i < 10; ++i) {
+		num[index + 1] = '0' + i;
+		Print1ToMaxOfNDigits2Core(num, len, index + 1);
+	}
+}
+void Print1ToMaxOfNDigits2(int n) {
+	if (n <= 0)
+		return;
+	char* num = new char[n + 1];
+	memset(num, '0', n);
+	num[n] = '\0';
+	for (int i = 0; i < 10; ++i) {
+		num[0] = '0' + i;
+		Print1ToMaxOfNDigits2Core(num, n, 0);
+	}
+	delete[] num;
+}
+
+//面试题19：正则表达式匹配
+bool matchCore(char* str, char* pattern) {
+	if (*str == '\0' && *pattern == '\0')
+		return true;
+	if (*str != '\0' && *pattern == '\0')
+		return false;
+	if (*(pattern + 1) == '*') {
+		if (*str == *pattern || (*pattern == '.' && *str != '\0')) {
+			return matchCore(str + 1, pattern) ||
+				matchCore(str, pattern + 2) ||
+				matchCore(str + 1, pattern + 2);
+		}
+		else {
+			return matchCore(str, pattern + 2);
+		}
+	}
+	else if (*str == *pattern || (*pattern == '.' && *str != '\0'))
+		return matchCore(str + 1, pattern + 1);
+	else
+		return false;
+}
+bool match(char* str, char* pattern) {
+	if (str == nullptr || pattern == nullptr)
+		return false;
+	return matchCore(str, pattern);
+}
+
+//面试题20：表示数值的字符串
+//数值的正确形式：A[.[B]][e|EC]或者.B[e|EC],A和C可能有正负号，B没有正负号
+bool scanUnsignedInteger(const char** string) {
+	const char* before = *string;
+	while (**string != '\0'&& **string >= '0' && **string <= '9')
+		++(*string);
+	return *string > before;
+}
+bool scanInteger(const char** string) {
+	if (**string == '-' || **string == '+')
+		++(*string);
+	return scanUnsignedInteger(string);
+}
+bool isNumeric(const char* string) {
+	if (string == nullptr)
+		return nullptr;
+	bool flag = scanInteger(&string);
+	if (*string == '.') {
+		string++;
+		flag = scanUnsignedInteger(&string) || flag; //不能写成flag || scanUnsignedInteger(&string),因为调用scanUnsignedInteger会改变string
+	}
+	if (*string == 'e' || *string == 'E') {
+		string++;
+		flag = scanInteger(&string) && flag;
+	}
+	return flag && *string == '\0';
+}
+
 
 /*-------------------------链表----------------------------*/
 
@@ -188,6 +351,62 @@ vector<int> printListFromTailToHead2(ListNode* head) {
 		re.push_back(head->val);
 	}
 	return re;
+}
+
+//面试题18：删除链表中的节点
+//O(1)时间：把要删除节点的下一个节点的值复制到要删除节点，再删除下一个节点
+//特殊情况：删除尾节点还是要从头开始遍历；要删除头节点，且链表中只有一个节点，注意要将头结点设为nullptr
+//因为有O（1)时间复杂度的限制，所以只能假设要删除的节点确实在链表中
+void DeleteNode(ListNode** pListHead, ListNode* pToBeDeleted) {
+	if (pListHead == nullptr || pToBeDeleted == nullptr)
+		return;
+	if (pToBeDeleted->next != nullptr) {  // 不是尾节点
+		pToBeDeleted->val = pToBeDeleted->next->val;
+		ListNode* temp = pToBeDeleted->next;
+		pToBeDeleted->next = temp->next;
+		delete temp;
+	} else if (*pListHead == pToBeDeleted) {  //只有一个节点
+		delete *pListHead;
+		*pListHead = nullptr;
+		pToBeDeleted = nullptr;
+	} else {  // 不止一个节点，且为尾节点
+		ListNode* walk = *pListHead;
+		while (walk->next != pToBeDeleted)
+			walk = walk->next;
+		walk->next = nullptr;
+		delete pToBeDeleted;
+		pToBeDeleted = nullptr;
+	}
+}
+//删除链表中的重复节点
+//头结点也有可能被删除，因此参数类型为ListNode**
+ListNode* deleteDuplication(ListNode** pHead) {
+	if (pHead == nullptr)
+		return nullptr;
+	ListNode* pre = nullptr;
+	ListNode* walk = *pHead;
+	ListNode* newHead = *pHead;
+	while (walk != nullptr) {
+		if (walk->next != nullptr && walk->val == walk->next->val) {  // 需要删除
+			int num = walk->val;
+			while (walk != nullptr && walk->val == num) {
+				ListNode* pNext = walk->next;
+				if (pre == nullptr) {
+					delete walk;
+					walk = pNext;
+					newHead = walk;
+				} else {
+					delete walk;
+					walk = pNext;
+					pre->next = walk;
+				}
+			}
+		} else {  // 不需要删除
+			pre = walk;
+			walk = walk->next;
+		}
+	}
+	return newHead;
 }
 
 //面试题22：链表中倒数第k个节点
@@ -327,35 +546,73 @@ RandomListNode* Clone(RandomListNode* pHead)
 }
 
 //面试题36：二叉搜索树与双向链表
-void ConvertCore(TreeNode* pCurrent, TreeNode** pLastNodeInList) {
-	if (pCurrent == nullptr)
-		return;
-	if (pCurrent->left != nullptr)
-		ConvertCore(pCurrent, pLastNodeInList);
-	pCurrent->left = *pLastNodeInList;
-	if (*pLastNodeInList != nullptr)
-		(*pLastNodeInList)->right = pCurrent;
-	*pLastNodeInList = pCurrent;
-	if (pCurrent->right != nullptr)
-		ConvertCore(pCurrent, pLastNodeInList);
-}
-TreeNode* Convert(TreeNode* pRootOfTree)
-{
-	TreeNode* pLastNodeInList = nullptr;
-	ConvertCore(pRootOfTree, &pLastNodeInList);
-	TreeNode* pHeadOfList = pLastNodeInList;
-	while (pHeadOfList != nullptr&&pHeadOfList->left != nullptr)
-		pHeadOfList = pHeadOfList->left;
-	return pHeadOfList;
-}
-
-/*-------------------------二叉树----------------------------*/
+//递归
 struct TreeNode {
 	int val;
 	TreeNode* left;
 	TreeNode* right;
 	TreeNode(int v) :val(v), left(nullptr), right(nullptr) {}
 };
+void ConvertCore(TreeNode* pCurrent, TreeNode** pLastNodeInList) {
+	if (pCurrent->left != nullptr)
+		ConvertCore(pCurrent->left, pLastNodeInList);
+	pCurrent->left = *pLastNodeInList;
+	if (*pLastNodeInList != nullptr)
+		(*pLastNodeInList)->right = pCurrent;
+	*pLastNodeInList = pCurrent;
+	if (pCurrent->right != nullptr)
+		ConvertCore(pCurrent->right, pLastNodeInList);
+}
+TreeNode* Convert(TreeNode* pRootOfTree) {
+	if (pRootOfTree == nullptr)
+		return nullptr;
+	TreeNode* pLastNodeInList = nullptr;
+	ConvertCore(pRootOfTree, &pLastNodeInList);
+	TreeNode* pHeadOfList = pLastNodeInList;
+	while (pHeadOfList != nullptr && pHeadOfList->left != nullptr)
+		pHeadOfList = pHeadOfList->left;
+	return pHeadOfList;
+}
+
+//面试题52：两个链表的第一个公共节点
+//首先得到两个链表的长度，以及长度差x；在较长的链表上先走x步，然后一起走，那么第一个相同的节点就是公共节点
+ListNode* FindFirstCommonNode(ListNode* pHead1, ListNode* pHead2) {
+	int len1 = 0, len2 = 0;
+	ListNode* walk1 = pHead1, *walk2 = pHead2;
+	while (walk1 != nullptr) {
+		len1++;
+		walk1 = walk1->next;
+	}
+	while (walk2 != nullptr) {
+		len2++;
+		walk2 = walk2->next;
+	}
+	if (len1 == 0 || len2 == 0)
+		return nullptr;
+	walk1 = pHead1;
+	walk2 = pHead2;
+	if (len1 > len2) {
+		int distance = len1 - len2;
+		while (distance) {
+			walk1 = walk1->next;
+			distance--;
+		}
+	}
+	if (len2 > len1) {
+		int distance = len2 - len1;
+		while (distance) {
+			walk2 = walk2->next;
+			distance--;
+		}
+	}
+	while (walk1 != walk2) {
+		walk1 = walk1->next;
+		walk2 = walk2->next;
+	}
+	return walk1;
+}
+
+/*-------------------------二叉树----------------------------*/
 
 //面试题7：重建二叉树
 //前序遍历，中序遍历：根节点在前序遍历的首位，找出根节点在中序遍历中所在的位置
@@ -436,9 +693,11 @@ TreeLinkNode* GetNext2(TreeLinkNode* pNode) {
 		return nullptr;
 }
 
+/*-------------------------栈和队列----------------------------*/
+
 //面试题9：用两个栈实现队列
-class Solution
-{
+//压入栈1，从栈2弹出
+class Solution {
 public:
 	void push(int node) {
 		stack1.push(node);
@@ -461,15 +720,18 @@ private:
 	stack<int> stack2;
 };
 
+/*-------------------------递归和循环----------------------------*/
+
 //面试题10：斐波那契数列
+//递归解法由于有很多重复计算，效率很低
+//从下往上计算，只要记录最后两个值就可以
 int Fibonacci(int n) {
 	if (n < 2)
 		return n;
 	int minusOne = 1;
 	int minusTwo = 0;
 	int re = 0;
-	for (int i = 2; i <= n; ++i)
-	{
+	for (int i = 2; i <= n; ++i) {
 		re = minusOne + minusTwo;
 		minusTwo = minusOne;
 		minusOne = re;
@@ -477,6 +739,7 @@ int Fibonacci(int n) {
 	return re;
 }
 //跳台阶
+//和计算斐波那契数列类似，f(n)=f(n-1)+f(n-2)
 int jumpFloor(int number) {
 	if (number <= 2)
 		return number;
@@ -489,6 +752,7 @@ int jumpFloor(int number) {
 	return re;
 }
 //变态跳台阶
+//数学归纳法：f(n)=2^(n-1)
 int jumpFloorII(int number) {
 	int re = 1;
 	for (int i = 1; i < number; ++i)
@@ -496,6 +760,7 @@ int jumpFloorII(int number) {
 	return re;
 }
 
+/*-------------------------查找和排序----------------------------*/
 
 //面试题11：旋转数组的最小数字
 int minSearchInorder(vector<int>& rotateArray, int left, int right) {
@@ -506,43 +771,47 @@ int minSearchInorder(vector<int>& rotateArray, int left, int right) {
 	}
 	return min;
 }
-int minNumberInRotateArray(vector<int> rotateArray) {//给出的所有元素都大于0，若数组大小为0，请返回0
-	int left = 0, right = rotateArray.size() - 1;
-	while (right - left > 1) {
-		int mid = (left + right) / 2;
+int minNumberInRotateArray(vector<int> rotateArray) {  // 给出的所有元素都大于0，若数组大小为0，请返回0
+	int left = 0, right = rotateArray.size() - 1,mid = 0;
+	while (rotateArray[left] >= rotateArray[right]) {  // 如果数组本来就有序，返回第一个元素，所以mid初始化为0
+		if (right - left == 1) {
+			mid = right;
+			break;
+		}
+		mid = (left + right) / 2;
 		if (rotateArray[left] == rotateArray[right] && rotateArray[left] == rotateArray[mid])
-			return minSearchInorder(rotateArray, left, right);//特殊情况，只能顺序查找
+			return minSearchInorder(rotateArray, left, right);  // 特殊情况，只能顺序查找，例如10111和11101
 		if (rotateArray[mid] >= rotateArray[left])
 			left = mid;
 		else if (rotateArray[mid] <= rotateArray[right])
 			right = mid;
 	}
-	return rotateArray[right];
+	return rotateArray[mid];
 }
 
+/*-------------------------回溯法----------------------------*/
+
 //面试题12：矩阵中的路径
+//当在矩阵中定位了路径中前n个字符的位置之后，在与第n个字符对应的格子的周围都没有找到第n+1个字符，这时候只好在路径上回到第n-1个字符
 bool hasPathCore(char* matrix, int rows, int cols, int row, int col, char* str, bool* visited, int& pathLength) {
 	if (str[pathLength] == '\0')
 		return true;
 	bool hasPath = false;
-	if (row >= 0 && row < rows&&col >= 0 && col < cols&&matrix[row*cols + col] == str[pathLength] && visited[row*cols + col] == false)
-	{
+	if (row >= 0 && row < rows && col >= 0 && col < cols&&matrix[row*cols + col] == str[pathLength] && visited[row*cols + col] == false) {
 		pathLength++;
 		visited[row*cols + col] = true;
 		hasPath = hasPathCore(matrix, rows, cols, row, col + 1, str, visited, pathLength)
 			|| hasPathCore(matrix, rows, cols, row, col - 1, str, visited, pathLength)
 			|| hasPathCore(matrix, rows, cols, row + 1, col, str, visited, pathLength)
 			|| hasPathCore(matrix, rows, cols, row - 1, col, str, visited, pathLength);
-		if (!hasPath)
-		{
+		if (!hasPath) {
 			pathLength--;
 			visited[row*cols + col] = false;
 		}
 	}
 	return hasPath;
 }
-bool hasPath(char* matrix, int rows, int cols, char* str)
-{
+bool hasPath(char* matrix, int rows, int cols, char* str) {
 	if (matrix == nullptr || rows == 0 || cols == 0 || str == nullptr)
 		return false;
 	bool* visited = new bool[rows*cols];
@@ -567,15 +836,15 @@ int getDigit(int num) {
 	return re;
 }
 bool check(int threshold, int rows, int cols, int row, int col, bool* visited) {
-	if (row >= 0 && row < rows&&col >= 0 && col < cols && !visited[row*cols + col] && getDigit(row) + getDigit(col) <= threshold)
+	if (row >= 0 && row < rows && col >= 0 && col < cols 
+		&& !visited[row*cols + col] && getDigit(row) + getDigit(col) <= threshold)
 		return true;
 	else
 		return false;
 }
 int movingCountCore(int threshold, int rows, int cols, int row, int col, bool* visited) {
 	int count = 0;
-	if (check(threshold, rows, cols, row, col, visited))
-	{
+	if (check(threshold, rows, cols, row, col, visited)) {
 		visited[row*cols + col] = true;
 		count = 1 + movingCountCore(threshold, rows, cols, row, col + 1, visited) +
 			movingCountCore(threshold, rows, cols, row, col - 1, visited) +
@@ -584,8 +853,7 @@ int movingCountCore(int threshold, int rows, int cols, int row, int col, bool* v
 	}
 	return count;
 }
-int movingCount(int threshold, int rows, int cols)
-{
+int movingCount(const int& threshold, const int& rows, const int& cols) {
 	if (rows < 0 || cols < 0)
 		return 0;
 	bool* visited = new bool[rows*cols];
@@ -595,7 +863,10 @@ int movingCount(int threshold, int rows, int cols)
 	return count;
 }
 
+/*-------------------------动态规划与贪婪算法----------------------------*/
+
 //面试题14：剪绳子(动态规划)
+//f(n)=f(i)*f(n-i)，从下到上算
 int maxProductAfterCutting(int length) {
 	if (length < 2)
 		return 0;
@@ -621,7 +892,7 @@ int maxProductAfterCutting(int length) {
 	return max;
 }
 //剪绳子（贪婪算法）
-//当n>=5,尽可能多地剪长度为3的绳子；当n=4时，把绳子剪成两端长度为2的绳子
+//当n>=5,尽可能多地剪长度为3的绳子；当n=4时，把绳子剪成两段长度为2的绳子
 int maxProductAfterCutting1(int length) {
 	if (length < 2)
 		return 0;
@@ -636,19 +907,26 @@ int maxProductAfterCutting1(int length) {
 	return ((int)pow(3, timesOfThree)*(int)pow(2, timesOfTwo));
 }
 
+/*-------------------------位运算----------------------------*/
+
 //面试题15：二进制中1的个数
 //把1个整数减去1再与原来的数做&运算，会把最右边的1变成0，整数中有几个1就循环几次
 int  NumberOf1(int n) {
 	int count = 0;
-	while (n)
-	{
+	while (n) {
 		count++;
 		n = (n - 1)&n;  
 	}
 	return count;
 }
 
-//面试题16：数值的整数次方
+/*-------------------------代码的完整性----------------------------*/
+
+//面试题16：数值的整数次方（不得使用库函数，不考虑大数问题）
+//非法输入：底数是0，指数是负数。可以用返回值、全局变量、异常告诉调用者出现了错误
+//0的0次方在数学上没有意义，输出0或1都行
+//求a的n次方，可以分解成：若n为偶数a^n=a^(n/2)*a^(n/2)，若n为奇数a^n=a^((n-1)/2)*a^((n-1)/2)*a
+//用位运算判断奇数偶数
 int invalidInput = false;
 double PowerCore(double base, int exponent) {
 	if (exponent == 0)
@@ -663,7 +941,7 @@ double PowerCore(double base, int exponent) {
 }
 double Power(double base, int exponent) {
 	invalidInput = false;
-	if (base == 0.0&&exponent < 0) {
+	if (base == 0.0 && exponent < 0) {
 		invalidInput = true;
 		return 0;
 	}
@@ -674,227 +952,6 @@ double Power(double base, int exponent) {
 	if (exponent < 0)
 		return 1.0 / re;
 	return re;
-}
-
-//面试题17：打印从1到最大的n位数
-//方法1：在字符串上模拟数字加法
-bool Increment(char* num) {
-	int len = strlen(num);
-	int flag = 0;
-	for (int i = len - 1; i >= 0; --i) {
-		int tempsum = num[i] - '0' + flag;
-		if (i == len - 1)
-			tempsum += 1;
-		if (tempsum >= 10) {
-			if (i == 0) {
-				return false;
-			}
-			else {
-				flag = tempsum / 10;
-				num[i] = '0' + tempsum % 10;
-			}
-
-		}
-		else {
-			num[i] = '0' + tempsum;
-			break;
-		}
-	}
-	return true;
-}
-void PrintNum(char* num) {
-	bool flag = true;//前面还没有碰到非零字符
-	int len = strlen(num);
-	for (int i = 0; i < len; ++i) {
-		if (flag&&num[i] != '0') {
-			flag = false;
-			cout << num[i];
-		}
-		else if (!flag)
-			cout << num[i];
-	}
-	cout << endl;
-}
-void Print1ToMaxOfNDigits(int n) {
-	if (n <= 0)
-		return;
-	char* num = new char[n + 1];
-	memset(num, '0', n);
-	num[n] = '\0';
-	while (Increment(num))
-		PrintNum(num);
-	delete[] num;
-}
-//方法2：每一位排列组合0-9
-void Print1ToMaxOfNDigits2Core(char* num, int len, int index) {
-	if (index == len - 1)
-	{
-		PrintNum(num);
-		return;
-	}
-	for (int i = 0; i < 10; ++i) {
-		num[index + 1] = '0' + i;
-		Print1ToMaxOfNDigits2Core(num, len, index + 1);
-	}
-}
-void Print1ToMaxOfNDigits2(int n) {
-	if (n <= 0)
-		return;
-	char* num = new char[n + 1];
-	memset(num, '0', n);
-	num[n] = '\0';
-	for (int i = 0; i < 10; ++i) {
-		num[0] = '0' + i;
-		Print1ToMaxOfNDigits2Core(num, n, 0);
-	}
-	delete[] num;
-}
-
-//面试题18：删除链表中的节点
-//O(1)时间
-void DeleteNode(ListNode** pListHead, ListNode* pToBeDeleted) {
-	if (pListHead == nullptr || pToBeDeleted == nullptr)
-		return;
-	if (pToBeDeleted->next != nullptr) {//不是尾节点
-		pToBeDeleted->val = pToBeDeleted->next->val;
-		ListNode* temp = pToBeDeleted->next;
-		pToBeDeleted->next = temp->next;
-		delete temp;
-	}
-	else if (*pListHead == pToBeDeleted) {//只有一个节点
-		delete *pListHead;
-		*pListHead = nullptr;
-		pToBeDeleted = nullptr;
-	}
-	else {//不止一个节点，且为尾节点
-		ListNode* walk = *pListHead;
-		while (walk->next != pToBeDeleted)
-			walk = walk->next;
-		walk->next = nullptr;
-		delete pToBeDeleted;
-		pToBeDeleted = nullptr;
-	}
-}
-//删除链表中的重复节点
-ListNode* deleteDuplication(ListNode* pHead)
-{
-	if (pHead == nullptr)
-		return nullptr;
-	ListNode* pre = nullptr;
-	ListNode* walk = pHead;
-	ListNode* newHead = pHead;
-	while (walk != nullptr) {
-		if (walk->next != nullptr&&walk->val == walk->next->val) {//需要删除
-			int num = walk->val;
-			while (walk != nullptr&&walk->val == num) {
-				ListNode* pNext = walk->next;
-				if (pre == nullptr) {
-					delete walk;
-					walk = pNext;
-					newHead = walk;
-				}
-				else {
-					delete walk;
-					walk = pNext;
-					pre->next = walk;
-				}
-			}
-		}
-		else {//不需要删除
-			pre = walk;
-			walk = walk->next;
-		}
-	}
-	return newHead;
-}
-
-//面试题19：正则表达式匹配
-bool matchCore(char* str, char* pattern) {
-	if (*str == '\0'&&*pattern == '\0')
-		return true;
-	if (*str != '\0'&&*pattern == '\0')
-		return false;
-	if (*(pattern + 1) == '*') {
-		if (*str == *pattern || (*pattern == '.'&&*str != '\0')) {
-			return matchCore(str + 1, pattern) ||
-				matchCore(str, pattern + 2) ||
-				matchCore(str + 1, pattern + 2);
-		}
-		else {
-			return matchCore(str, pattern + 2);
-		}
-	}
-	else if (*str == *pattern || (*pattern == '.'&&*str != '\0'))
-		return matchCore(str + 1, pattern + 1);
-	else
-		return false;
-}
-bool match(char* str, char* pattern)
-{
-	if (str == nullptr || pattern == nullptr)
-		return false;
-	return matchCore(str, pattern);
-}
-
-//面试题20：表示数值的字符串
-bool scanUnsignedInteger(const char** string) {
-	const char* before = *string;
-	while (**string != '\0'&&**string >= '0'&&**string <= '9')
-		++(*string);
-	return *string > before;
-}
-bool scanInteger(const char** string) {
-	if (**string == '-' || **string == '+')
-		++(*string);
-	return scanUnsignedInteger(string);
-}
-bool isNumeric(const char* string)
-{
-	if (string == nullptr)
-		return nullptr;
-	bool flag = scanInteger(&string);
-	if (*string == '.') {
-		string++;
-		flag = scanUnsignedInteger(&string) || flag;
-	}
-	if (*string == 'e' || *string == 'E') {
-		string++;
-		flag = scanInteger(&string) && flag;
-	}
-	return flag&&*string == '\0';
-}
-//面试题21：调整数组顺序使奇数位于偶数前面
-//奇数之间、偶数之间相对位置不变（类似于冒泡排序）
-void reOrderArray(vector<int> &array) {
-	int len = array.size();
-	if (len < 2)
-		return;
-	for (int i = len - 1; i>0; --i)
-		for (int j = 0; j < i; ++j) {
-			if ((array[j] & 0x1 == 0) && (array[j + 1] & 0x1 == 1)) {
-				int temp = array[j];
-				array[j] = array[j + 1];
-				array[j + 1] = temp;
-			}
-		}
-}
-//相对次序可以变化
-void reOrderArray1(vector<int> &array) {
-	int len = array.size();
-	if (len < 2)
-		return;
-	int left = 0, right = len - 1;
-	while (right > left) {
-		while (right > left && (array[left] & 0x1) == 1)
-			left++;
-		while (right > left && (array[right] & 0x1) == 0)
-			right--;
-		if (right > left) {
-			int temp = array[left];
-			array[left] = array[right];
-			array[right] = temp;
-		}
-	}
 }
 
 
@@ -1770,43 +1827,7 @@ int InversePairs(vector<int> data) {
 	return pairs % 1000000007;
 }
 
-//面试题52：两个链表的第一个公共节点
-ListNode* FindFirstCommonNode(ListNode* pHead1, ListNode* pHead2) {
-	int len1 = 0, len2 = 0;
-	ListNode* walk1 = pHead1, *walk2 = pHead2;
-	while (walk1 != nullptr) {
-		len1++;
-		walk1 = walk1->next;
-	}
-	while (walk2 != nullptr) {
-		len2++;
-		walk2 = walk2->next;
-	}
-	if (len1 == 0 || len2 == 0)
-		return nullptr;
-	walk1 = pHead1;
-	walk2 = pHead2;
-	if (len1 > len2) {
-		int distance = len1 - len2;
-		while (distance)
-		{
-			walk1 = walk1->next;
-			distance--;
-		}
-	}
-	if (len2 > len1) {
-		int distance = len2 - len1;
-		while (distance) {
-			walk2 = walk2->next;
-			distance--;
-		}
-	}
-	while (walk1 != walk2) {
-		walk1 = walk1->next;
-		walk2 = walk2->next;
-	}
-	return walk1;
-}
+
 
 //面试题53：在排序数组中查找数字
 int FirstPlace(const vector<int>& data, int left, int right, const int& k) {
