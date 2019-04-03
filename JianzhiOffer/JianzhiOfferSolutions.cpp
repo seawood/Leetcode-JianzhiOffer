@@ -693,6 +693,76 @@ TreeLinkNode* GetNext2(TreeLinkNode* pNode) {
 		return nullptr;
 }
 
+//面试题26：树的子结构
+bool Tree1HasTree2(TreeNode* pRoot1, TreeNode* pRoot2) {
+	if (pRoot2 == nullptr)
+		return true;
+	if (pRoot1 == nullptr)
+		return false;
+
+	if (pRoot1->val != pRoot2->val)
+		return false;
+	return Tree1HasTree2(pRoot1->left, pRoot2->left) && Tree1HasTree2(pRoot1->right, pRoot2->right);
+}
+bool HasSubtree(TreeNode* pRoot1, TreeNode* pRoot2)
+{
+	bool result = false;
+	if (pRoot1 != nullptr && pRoot2 != nullptr) {
+		if (pRoot1->val == pRoot2->val)
+			result = Tree1HasTree2(pRoot1, pRoot2);
+		if (!result)
+			result = HasSubtree(pRoot1->left, pRoot2);
+		if (!result)
+			result = HasSubtree(pRoot1->right, pRoot2);
+	}
+	return result;
+}
+
+//判断两个double值是不是相等
+//因为计算机表示小数都有误差
+bool Equal(double num1, double num2) {
+	if (((num1 - num2) > -0.0000001) && ((num1 - num2) < 0.0000001))
+		return true;
+	else
+		return false;
+}
+
+//面试题27：二叉树的镜像
+//前序遍历这棵树的每个节点，如果遍历到的节点有子节点，则交换它的两个子节点
+//循环解法
+void alongLeft(stack<TreeNode*> &s, TreeNode* root) {
+	while (root) {
+		if (root->left || root->right)
+			swap(root->left, root->right);
+		if (root->right != nullptr)
+			s.push(root->right);
+		root = root->left;
+	}
+}
+void Mirror(TreeNode *pRoot) {
+	stack<TreeNode*> s;
+	while (true) {
+		alongLeft(s, pRoot);
+		if (s.empty())
+			break;
+		pRoot = s.top();
+		s.pop();
+	}
+}
+//递归解法
+void Mirror(TreeNode *pRoot) {
+	if (pRoot == nullptr)
+		return;
+	if (pRoot->left == nullptr && pRoot->right == nullptr)
+		return;
+	TreeNode* tmp = pRoot->left;
+	pRoot->left = pRoot->right;
+	pRoot->right = tmp;
+	if (pRoot->left != nullptr)
+		Mirror(pRoot->left);
+	if (pRoot->right != nullptr)
+		Mirror(pRoot->right);
+}
 /*-------------------------栈和队列----------------------------*/
 
 //面试题9：用两个栈实现队列
@@ -955,50 +1025,10 @@ double Power(double base, int exponent) {
 }
 
 
-//面试题26：树的子结构
-bool Tree1HasTree2(TreeNode* pRoot1, TreeNode* pRoot2) {
-	if (pRoot2 == nullptr)
-		return true;
-	if (pRoot1 == nullptr)
-		return false;
 
-	if (pRoot1->val != pRoot2->val)
-		return false;
-	return Tree1HasTree2(pRoot1->left, pRoot2->left) && Tree1HasTree2(pRoot1->right, pRoot2->right);
-}
-bool HasSubtree(TreeNode* pRoot1, TreeNode* pRoot2)
-{
-	bool result = false;
-	if (pRoot1 != nullptr&&pRoot2 != nullptr) {
-		if (pRoot1->val == pRoot2->val)
-			result = Tree1HasTree2(pRoot1, pRoot2);
-		if (!result)
-			result = HasSubtree(pRoot1->left, pRoot2);
-		if (!result)
-			result = HasSubtree(pRoot1->right, pRoot2);
-	}
-	return result;
-}
 
-//面试题27：二叉树的镜像
-void alongLeft(stack<TreeNode*> &s, TreeNode* root) {
-	while (root) {
-		if (root->left || root->right)
-			swap(root->left, root->right);
-		s.push(root->right);
-		root = root->left;
-	}
-}
-void Mirror(TreeNode *pRoot) {
-	stack<TreeNode*> s;
-	while (true) {
-		alongLeft(s, pRoot);
-		if (s.empty())
-			break;
-		pRoot = s.top();
-		s.pop();
-	}
-}
+
+
 //面试题28：对称的二叉树
 bool isSymmetricalCore(TreeNode* pRoot1, TreeNode* pRoot2) {
 	if (pRoot1 == nullptr&&pRoot2 == nullptr)
