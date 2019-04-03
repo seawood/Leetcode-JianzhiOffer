@@ -1,4 +1,4 @@
-#牛客网->2018校招真题
+//牛客网->2018校招真题
 
 //三个数乘积的最大值（拼多多）
 //https://www.nowcoder.com/practice/5f29c72b1ae14d92b9c3fa03a037ac5f?tpId=90&tqId=30776&tPage=1&rp=1&ru=/ta/2018test&qru=/ta/2018test/question-ranking

@@ -119,6 +119,42 @@ void reOrderArray1(vector<int> &array, bool(*func)(int) {
 		}
 	}
 }
+
+//面试题29：顺时针打印矩阵
+void printOneCircle(vector<int>& result, const vector<vector<int>>& matrix,
+	const int& rows, const int& cols, const int& start) { // 打印一圈
+	int maxCol = cols - start - 1;
+	int maxRow = rows - start - 1;
+	for (int i = start; i <= maxCol; ++i)
+		result.push_back(matrix[start][i]);
+	//至少有两行时打印一列
+	if (maxRow > start)
+		for (int i = start + 1; i <= maxRow; ++i)
+			result.push_back(matrix[i][maxCol]);
+	//至少有两行两列时打印一行
+	if (maxRow > start && maxCol > start)
+		for (int i = maxCol - 1; i >= start; --i)
+			result.push_back(matrix[maxRow][i]);
+	//至少有三行两列时打印一列
+	if (maxRow - start >= 2 && maxCol > start)
+		for (int i = maxRow - 1; i > start; --i)
+			result.push_back(matrix[i][start]);
+}
+vector<int> printMatrix(vector<vector<int> > matrix) {
+	vector<int> result;
+	int rows = matrix.size();
+	if (rows == 0)
+		return result;
+	int cols = matrix[0].size();
+	if (cols == 0)
+		return result;
+	int start = 0;
+	while (rows > 2 * start && cols > 2 * start) { // 每一圈的起始点为（start,start)
+		printOneCircle(result, matrix, rows, cols, start);
+		++start;
+	}
+	return result;
+}
 /*-------------------------字符串----------------------------*/
 
 //面试题5：替换空格
@@ -763,6 +799,23 @@ void Mirror(TreeNode *pRoot) {
 	if (pRoot->right != nullptr)
 		Mirror(pRoot->right);
 }
+
+//面试题28：对称的二叉树
+bool isSymmetricalCore(TreeNode* pRoot1, TreeNode* pRoot2) {
+	if (pRoot1 == nullptr&&pRoot2 == nullptr)
+		return true;
+	if (pRoot1 == nullptr || pRoot2 == nullptr)
+		return false;
+	if (pRoot1->val != pRoot2->val)
+		return false;
+	return isSymmetricalCore(pRoot1->left, pRoot2->right) &&
+		isSymmetricalCore(pRoot1->right, pRoot2->left);
+}
+bool isSymmetrical(TreeNode* pRoot)
+{
+	return isSymmetricalCore(pRoot, pRoot);
+}
+
 /*-------------------------栈和队列----------------------------*/
 
 //面试题9：用两个栈实现队列
@@ -789,6 +842,56 @@ private:
 	stack<int> stack1;
 	stack<int> stack2;
 };
+
+//面试题30：包含min函数的栈
+class StackWithMin {
+	stack<int> m_data;
+	stack<int> m_min;
+public:
+	void push(int value) {
+		if (m_data.empty())
+			m_min.push(value);
+		else
+			m_min.push(m_data.top()<value ? m_data.top() : value);
+		m_data.push(value);
+	}
+	void pop() {
+		m_data.pop();
+		m_min.pop();
+	}
+	int top() {
+		return m_data.top();
+	}
+	int min() {
+		return m_min.top();
+	}
+};
+
+//面试题31：栈的压入、弹出序列
+bool IsPopOrder(vector<int> pushV, vector<int> popV) {
+	int lenPush = pushV.size(), lenPop = popV.size();
+	if (lenPush == 0 || lenPop == 0 || lenPush != lenPop)
+		return false;
+	stack<int> s;
+	int i = 0, j = 0;
+	while (j < lenPop) {
+		if (s.empty() || s.top() != popV[j]) {
+			while (i < lenPush && pushV[i] != popV[j])
+				s.push(pushV[i++]);
+			if (i < lenPush && pushV[i] == popV[j]) {
+				++i;
+				++j;
+			}
+			else
+				return false;
+		}
+		else {
+			s.pop();
+			j++;
+		}
+	}
+	return true;
+}
 
 /*-------------------------递归和循环----------------------------*/
 
@@ -1026,109 +1129,6 @@ double Power(double base, int exponent) {
 
 
 
-
-
-
-//面试题28：对称的二叉树
-bool isSymmetricalCore(TreeNode* pRoot1, TreeNode* pRoot2) {
-	if (pRoot1 == nullptr&&pRoot2 == nullptr)
-		return true;
-	if (pRoot1 == nullptr || pRoot2 == nullptr)
-		return false;
-	if (pRoot1->val != pRoot2->val)
-		return false;
-	return isSymmetricalCore(pRoot1->left, pRoot2->right) &&
-		isSymmetricalCore(pRoot1->right, pRoot2->left);
-}
-bool isSymmetrical(TreeNode* pRoot)
-{
-	return isSymmetricalCore(pRoot, pRoot);
-}
-//面试题29：顺时针打印矩阵
-void printOneCircle(vector<int>& result, const vector<vector<int>>& matrix, const int& rows, const int& cols, const int& start) {
-	int maxCol = cols - start - 1;
-	int maxRow = rows - start - 1;
-	for (int i = start; i <= maxCol; ++i)
-		result.push_back(matrix[start][i]);
-	//至少有两行时打印一列
-	if (maxRow > start)
-		for (int i = start + 1; i <= maxRow; ++i)
-			result.push_back(matrix[i][maxCol]);
-	//至少有两行两列时打印一行
-	if (maxRow>start&&maxCol>start)
-		for (int i = maxCol - 1; i >= start; --i)
-			result.push_back(matrix[maxRow][i]);
-	//至少有三行两列时打印一列
-	if (maxRow - start >= 2 && maxCol>start)
-		for (int i = maxRow - 1; i > start; --i)
-			result.push_back(matrix[i][start]);
-}
-vector<int> printMatrix(vector<vector<int> > matrix) {
-	vector<int> result;
-	int rows = matrix.size();
-	if (rows == 0)
-		return result;
-	int cols = matrix[0].size();
-	if (cols == 0)
-		return result;
-	int start = 0;
-	while (rows > 2 * start&&cols > 2 * start) {
-		printOneCircle(result, matrix, rows, cols, start);
-		++start;
-	}
-	return result;
-}
-
-//面试题30：包含min函数的栈
-class StackWithMin {
-	stack<int> m_data;
-	stack<int> m_min;
-public:
-	void push(int value) {
-		if (m_data.empty())
-			m_min.push(value);
-		else
-			m_min.push(m_data.top()<value ? m_data.top() : value);
-		m_data.push(value);
-	}
-	void pop() {
-		m_data.pop();
-		m_min.pop();
-	}
-	int top() {
-		return m_data.top();
-	}
-	int min() {
-		return m_min.top();
-	}
-};
-
-//面试题31：栈的压入、弹出序列
-bool IsPopOrder(vector<int> pushV, vector<int> popV) {
-	int lenPush = pushV.size(), lenPop = popV.size();
-	if (lenPush == 0 || lenPop == 0 || lenPush != lenPop)
-		return false;
-	stack<int> s;
-	int i = 0, j = 0;
-	while (j < lenPop) {
-		if (s.empty() || s.top() != popV[j]) {
-			while (i<lenPush&&pushV[i] != popV[j])
-				s.push(pushV[i++]);
-			if (i < lenPush&&pushV[i] == popV[j])
-			{
-				++i;
-				++j;
-			}
-			else
-				return false;
-		}
-		else {
-			s.pop();
-			j++;
-		}
-	}
-	return true;
-}
 //面试题32：从上到下打印二叉树
 vector<int> PrintFromTopToBottom(TreeNode* root) {
 	vector<int> result;
