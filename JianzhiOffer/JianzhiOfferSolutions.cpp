@@ -816,6 +816,98 @@ bool isSymmetrical(TreeNode* pRoot)
 	return isSymmetricalCore(pRoot, pRoot);
 }
 
+//面试题32：从上到下打印二叉树
+vector<int> PrintFromTopToBottom(TreeNode* root) {
+	vector<int> result;
+	if (root == nullptr)
+		return result;
+	queue<TreeNode*> q;
+	q.push(root);
+	while (!q.empty()) {
+		TreeNode* temp = q.front();
+		result.push_back(temp->val);
+		if (temp->left)
+			q.push(temp->left);
+		if (temp->right)
+			q.push(q.front()->right);
+		q.pop();
+	}
+	return result;
+}
+//把二叉树打印成多行
+//用两个额外的变量：当前层还没有打印的节点数，下一层节点数
+vector<vector<int> > Print(TreeNode* pRoot) {
+	vector < vector<int >> result;
+	if (pRoot == nullptr)
+		return result;
+	int toBePrinted = 1, nextRowNum = 0;
+	queue<TreeNode*> q;
+	q.push(pRoot);
+	while (true) {
+		vector<int> row;
+		while (toBePrinted) {
+			row.push_back(q.front()->val);
+			if (q.front()->left) {
+				nextRowNum++;
+				q.push(q.front()->left);
+			}
+			if (q.front()->right) {
+				nextRowNum++;
+				q.push(q.front()->right);
+			}
+			q.pop();
+			toBePrinted--;
+		}
+		result.push_back(row);
+		if (nextRowNum) {
+			toBePrinted = nextRowNum;
+			nextRowNum = 0;
+		}
+		else
+			break;
+	}
+	return result;
+}
+//按之字型打印二叉树
+//用两个栈
+vector<vector<int> > Print1(TreeNode* pRoot) {
+	vector<vector<int>> result;
+	if (pRoot == nullptr)
+		return result;
+	stack<TreeNode*> sOdd, sEven;
+	sOdd.push(pRoot);
+	int row = 1;
+	while (!sOdd.empty() || !sEven.empty()) {
+		vector<int> oneRow;
+		if (row & 0x1 != 0) {//奇行
+			while (!sOdd.empty()) {
+				TreeNode* temp = sOdd.top();
+				sOdd.pop();
+				oneRow.push_back(temp->val);
+				if (temp->left)
+					sEven.push(temp->left);
+				if (temp->right)
+					sEven.push(temp->right);
+			}
+		}
+		else {//偶行
+			while (!sEven.empty()) {
+				TreeNode* temp = sEven.top();
+				sEven.pop();
+				oneRow.push_back(temp->val);
+				if (temp->right)
+					sOdd.push(temp->right);
+				if (temp->left)
+					sOdd.push(temp->left);
+			}
+		}
+		result.push_back(oneRow);
+		row++;
+	}
+	return result;
+}
+
+
 /*-------------------------栈和队列----------------------------*/
 
 //面试题9：用两个栈实现队列
@@ -1129,94 +1221,6 @@ double Power(double base, int exponent) {
 
 
 
-//面试题32：从上到下打印二叉树
-vector<int> PrintFromTopToBottom(TreeNode* root) {
-	vector<int> result;
-	if (root == nullptr)
-		return result;
-	queue<TreeNode*> q;
-	q.push(root);
-	while (!q.empty()) {
-		TreeNode* temp = q.front();
-		result.push_back(temp->val);
-		if (temp->left)
-			q.push(temp->left);
-		if (temp->right)
-			q.push(q.front()->right);
-		q.pop();
-	}
-	return result;
-}
-//把二叉树打印成多行
-vector<vector<int> > Print(TreeNode* pRoot) {
-	vector < vector<int >> result;
-	if (pRoot == nullptr)
-		return result;
-	int toBePrinted = 1, nextRowNum = 0;
-	queue<TreeNode*> q;
-	q.push(pRoot);
-	while (true) {
-		vector<int> row;
-		while (toBePrinted) {
-			row.push_back(q.front()->val);
-			if (q.front()->left) {
-				nextRowNum++;
-				q.push(q.front()->left);
-			}
-			if (q.front()->right) {
-				nextRowNum++;
-				q.push(q.front()->right);
-			}
-			q.pop();
-			toBePrinted--;
-		}
-		result.push_back(row);
-		if (nextRowNum) {
-			toBePrinted = nextRowNum;
-			nextRowNum = 0;
-		}
-		else
-			break;
-	}
-	return result;
-}
-//按之字型打印二叉树
-vector<vector<int> > Print1(TreeNode* pRoot) {
-	vector<vector<int>> result;
-	if (pRoot == nullptr)
-		return result;
-	stack<TreeNode*> sOdd, sEven;
-	sOdd.push(pRoot);
-	int row = 1;
-	while (!sOdd.empty() || !sEven.empty()) {
-		vector<int> oneRow;
-		if (row & 0x1 != 0) {//奇行
-			while (!sOdd.empty()) {
-				TreeNode* temp = sOdd.top();
-				sOdd.pop();
-				oneRow.push_back(temp->val);
-				if (temp->left)
-					sEven.push(temp->left);
-				if (temp->right)
-					sEven.push(temp->right);
-			}
-		}
-		else {//偶行
-			while (!sEven.empty()) {
-				TreeNode* temp = sEven.top();
-				sEven.pop();
-				oneRow.push_back(temp->val);
-				if (temp->right)
-					sOdd.push(temp->right);
-				if (temp->left)
-					sOdd.push(temp->left);
-			}
-		}
-		result.push_back(oneRow);
-		row++;
-	}
-	return result;
-}
 
 //面试题33：二叉搜索树的后续遍历序列
 bool VerifySquenceOfBSTCore(const vector<int>& sequence, const int& l, const int& r) {
@@ -1225,22 +1229,22 @@ bool VerifySquenceOfBSTCore(const vector<int>& sequence, const int& l, const int
 	while (i < r && sequence[i] < root)
 		++i;
 	int leftEnd = i - 1;
-	while (i<r && sequence[i]>root)
+	while (i < r && sequence[i] > root)
 		++i;
 	int rightBegin = i - 1;
 	bool left = true, right = true;
 	if (i == r)
 	{
-		if (leftEnd>l)
+		if (leftEnd > l)
 			left = VerifySquenceOfBSTCore(sequence, l, leftEnd);
-		if (rightBegin>leftEnd)
+		if (rightBegin > leftEnd)
 			right = VerifySquenceOfBSTCore(sequence, rightBegin, r - 1);
-		return left&&right;
+		return left && right;
 	}
 	else
 		return false;
 }
-bool VerifySquenceOfBST(vector<int> sequence) {
+bool VerifySquenceOfBST(const vector<int>& sequence) {
 	int len = sequence.size();
 	if (len == 0)
 		return false;
