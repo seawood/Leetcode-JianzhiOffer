@@ -907,6 +907,25 @@ vector<vector<int> > Print1(TreeNode* pRoot) {
 	return result;
 }
 
+//面试题33：二叉搜索树的后续遍历序列
+bool VerifySquenceOfBSTCore(const vector<int>& sequence, const int& l, const int& r) {
+	if (l >= r) //对于叶子节点l>r，对于空子树，l=r
+		return true;
+	int root = sequence[r];
+	int i = r;
+	while (i > l && sequence[i - 1] > root)
+		--i;
+	for (int j = i - 1; j >= l; --j)
+		if (sequence[j] > root)
+			return false;
+	return VerifySquenceOfBSTCore(sequence, l, i - 1) && VerifySquenceOfBSTCore(sequence, i, r - 1);
+}
+bool VerifySquenceOfBST(const vector<int>& sequence) {
+	int len = sequence.size();
+	if (len == 0)
+		return false;
+	return VerifySquenceOfBSTCore(sequence, 0, len - 1);
+}
 
 /*-------------------------栈和队列----------------------------*/
 
@@ -1222,34 +1241,7 @@ double Power(double base, int exponent) {
 
 
 
-//面试题33：二叉搜索树的后续遍历序列
-bool VerifySquenceOfBSTCore(const vector<int>& sequence, const int& l, const int& r) {
-	int root = sequence[r];
-	int i = l;
-	while (i < r && sequence[i] < root)
-		++i;
-	int leftEnd = i - 1;
-	while (i < r && sequence[i] > root)
-		++i;
-	int rightBegin = i - 1;
-	bool left = true, right = true;
-	if (i == r)
-	{
-		if (leftEnd > l)
-			left = VerifySquenceOfBSTCore(sequence, l, leftEnd);
-		if (rightBegin > leftEnd)
-			right = VerifySquenceOfBSTCore(sequence, rightBegin, r - 1);
-		return left && right;
-	}
-	else
-		return false;
-}
-bool VerifySquenceOfBST(const vector<int>& sequence) {
-	int len = sequence.size();
-	if (len == 0)
-		return false;
-	return VerifySquenceOfBSTCore(sequence, 0, len - 1);
-}
+
 
 //面试题34：二叉树中和为某一值的路径
 void FindPathCore(TreeNode* root,
