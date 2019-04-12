@@ -310,6 +310,34 @@ bool isNumeric(const char* string) {
 	return flag && *string == '\0';
 }
 
+//面试题38：字符串的排列
+void PermutationCore(const string str, int i, vector<string>& result) {
+	if (i == str.size() - 1)
+		return;
+	int inext = i + 1;
+	PermutationCore(str, inext, result);
+	for (int j = i + 1; j < str.size(); ++j) {
+		if (str[i] != str[j]) {
+			string strCopy = str;
+			char jstr = strCopy[j]; //细节：不能直接交换i和j处的字符
+			for (int jj = j; jj > i; --jj)//而是j放到i位置处，然后依次后移，不然结果的排列顺序在牛客网上不对
+				strCopy[jj] = strCopy[jj - 1];
+			strCopy[i] = jstr;
+			result.push_back(strCopy);
+			PermutationCore(strCopy, inext, result);
+		}
+	}
+}
+vector<string> Permutation(string str) {
+	int len = str.size();
+	vector<string> result;
+	if (len == 0)
+		return result;
+	int i = 0;
+	result.push_back(str);
+	PermutationCore(str, i, result);
+	return result;
+}
 
 /*-------------------------链表----------------------------*/
 
@@ -1315,35 +1343,7 @@ double Power(double base, int exponent) {
 }
 
 
-//面试题38：字符串的排列
-void PermutationCore(const string str, int i, vector<string>& result) {
-	if (i == str.size() - 1)
-		return;
-	int inext = i + 1;
-	PermutationCore(str, inext, result);
-	for (int j = i + 1; j < str.size(); ++j) {
-		if (str[i] != str[j])
-		{
-			string strCopy = str;
-			char jstr = strCopy[j]; //细节：不能直接交换i和j处的字符
-			for (int jj = j; jj > i; --jj)//而是j放到i位置处，然后依次后移，不然结果的排列顺序在牛客网上不对
-				strCopy[jj] = strCopy[jj - 1];
-			strCopy[i] = jstr;
-			result.push_back(strCopy);
-			PermutationCore(strCopy, inext, result);
-		}
-	}
-}
-vector<string> Permutation(string str) {
-	int len = str.size();
-	vector<string> result;
-	if (len == 0)
-		return result;
-	int i = 0;
-	result.push_back(str);
-	PermutationCore(str, i, result);
-	return result;
-}
+
 
 //面试题39：数组中出现次数超过一半的数字
 int MoreThanHalfNum_Solution(vector<int> numbers) {
