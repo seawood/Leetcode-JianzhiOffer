@@ -927,6 +927,82 @@ bool VerifySquenceOfBST(const vector<int>& sequence) {
 	return VerifySquenceOfBSTCore(sequence, 0, len - 1);
 }
 
+//面试题34：二叉树中和为某一值的路径
+void FindPathCore(TreeNode* root,
+	const int& expectNumber,
+	int currentSum,
+	vector<int> re,  //如果这里参数定义成vector<int> & re，则最后要加上re.pop_back()
+	vector<vector<int>>& result) {
+	re.push_back(root->val);
+	currentSum += root->val;
+	if (root->left == nullptr&&root->right == nullptr&&expectNumber == currentSum) {
+		result.push_back(re);
+	}
+	else {
+		if (root->left != nullptr)
+			FindPathCore(root->left, expectNumber, currentSum, re, result);
+		if (root->right != nullptr)
+			FindPathCore(root->right, expectNumber, currentSum, re, result);
+	}
+	//re.pop_back();
+}
+vector<vector<int> > FindPath(TreeNode* root, int expectNumber) {
+	vector<vector<int>> result;
+	if (root == nullptr)
+		return result;
+	vector<int> re;
+	int currentSum = 0;
+	FindPathCore(root, expectNumber, currentSum, re, result);
+	return result;
+}
+
+//面试题37：序列化二叉树
+void SerializeCore(TreeNode* root, string& s) {
+	if (root == nullptr) {
+		s += "$,";
+		return;
+	}
+	string temp = to_string(root->val);
+	s += temp;
+	s += ",";
+	SerializeCore(root->left, s);
+	SerializeCore(root->right, s);
+}
+char* Serialize(TreeNode *root) {
+	if (root == nullptr)
+		return nullptr;
+	string s;
+	SerializeCore(root, s);
+	char* result = new char[s.size()]; //末尾的，不能放进去
+	for (int i = 0; i < s.size() - 1; ++i)
+		result[i] = s[i];
+	result[s.size() - 1] = '\0';
+	return result;
+}
+//反序列化二叉树
+TreeNode* DeserializeCore(char** str) { //注意要声明成**
+	if (**str == '$') {
+		(*str) += 2;
+		return nullptr;
+	}
+	int num = 0;
+	while (**str != ',') {
+		num = 10 * num + (**str) - '0';
+		++(*str);
+	}
+	++(*str);
+	TreeNode* root = new TreeNode(num);
+	root->left = DeserializeCore(str);
+	root->right = DeserializeCore(str);
+	return root;
+}
+TreeNode* Deserialize(char *str) {
+	if (str == nullptr)
+		return nullptr;
+	TreeNode* root = DeserializeCore(&str);
+	return root;
+}
+
 /*-------------------------栈和队列----------------------------*/
 
 //面试题9：用两个栈实现队列
@@ -1238,90 +1314,6 @@ double Power(double base, int exponent) {
 	return re;
 }
 
-
-
-
-
-
-//面试题34：二叉树中和为某一值的路径
-void FindPathCore(TreeNode* root,
-	const int& expectNumber,
-	int currentSum,
-	vector<int>& re,
-	vector<vector<int>>& result) {
-	re.push_back(root->val);
-	currentSum += root->val;
-	if (root->left == nullptr&&root->right == nullptr&&expectNumber == currentSum) {
-		result.push_back(re);
-	}
-	else
-	{
-		if (root->left != nullptr)
-			FindPathCore(root->left, expectNumber, currentSum, re, result);
-		if (root->right != nullptr)
-			FindPathCore(root->right, expectNumber, currentSum, re, result);
-	}
-	re.pop_back();
-}
-vector<vector<int> > FindPath(TreeNode* root, int expectNumber) {
-	vector<vector<int>> result;
-	if (root == nullptr)
-		return result;
-	vector<int> re;
-	int currentSum = 0;
-	FindPathCore(root, expectNumber, currentSum, re, result);
-	return result;
-}
-
-
-//面试题37：序列化二叉树
-void SerializeCore(TreeNode* root, string& s) {
-	if (root == nullptr) {
-		s += "$,";
-		return;
-	}
-	string temp = to_string(root->val);
-	s += temp;
-	s += ",";
-	SerializeCore(root->left, s);
-	SerializeCore(root->right, s);
-}
-char* Serialize(TreeNode *root) {
-	if (root == nullptr)
-		return nullptr;
-	string s;
-	SerializeCore(root, s);
-	char* result = new char[s.size()];
-	for (int i = 0; i < s.size() - 1; ++i)
-		result[i] = s[i];
-	result[s.size() - 1] = '\0';
-	return result;
-}
-TreeNode* DeserializeCore(char** str) {
-	if (**str == '$') {
-		++(*str);
-		++(*str);
-		return nullptr;
-	}
-	int num = 0;
-	while (**str != ',') {
-		num = 10 * num + (**str) - '0';
-		++(*str);
-	}
-	++(*str);
-	TreeNode* root = new TreeNode(num);
-	root->left = DeserializeCore(str);
-	root->right = DeserializeCore(str);
-	return root;
-
-}
-TreeNode* Deserialize(char *str) {
-
-	if (str == nullptr)
-		return nullptr;
-	TreeNode* root = DeserializeCore(&str);
-	return root;
-}
 
 //面试题38：字符串的排列
 void PermutationCore(const string str, int i, vector<string>& result) {
