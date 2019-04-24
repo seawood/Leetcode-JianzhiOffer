@@ -6,7 +6,7 @@ public:
 	CMyString& operator=(const CMyString& str) {  
 		if (&str != this) {
 			CMyString tmp(str);  //copy and swap
-			int ptemp = tmp.m_pData;
+			char* ptemp = tmp.m_pData;
 			tmp.m_pData = m_pData;
 			m_pData = ptemp;
 		}

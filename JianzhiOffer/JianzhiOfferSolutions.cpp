@@ -155,6 +155,136 @@ vector<int> printMatrix(vector<vector<int> > matrix) {
 	}
 	return result;
 }
+
+//面试题39：数组中出现次数超过一半的数字
+int MoreThanHalfNum_Solution(const vector<int>& numbers) {
+	int len = numbers.size();
+	if (len == 0)
+		return 0;
+	int count = 0, mark;
+	for (int i = 0; i < len; ++i) {
+		if (count == 0) {
+			count++;
+			mark = numbers[i];
+		}
+		else if (numbers[i] == mark) {
+			count++;
+		}
+		else
+			count--;
+	}
+	count = 0;
+	for (int i = 0; i < len; ++i)//要检查是否真的存在出现次数大于一半的数字
+		if (numbers[i] == mark)
+			count++;
+	if (count * 2 > len)
+		return mark;
+	else
+		return 0;
+}
+//基于快速排序思想
+//如果存在出现次数超过一半的数字，那么排序之后中位数一定出现次数超过一半；不用完全排序，只要找到第len/2大的数
+int Partition(vector<int>& numbers, int left, int right) {
+	int l = left, r = right, copy = numbers[l];
+	while (l < r) {
+		while (l<r&&numbers[r] > copy)
+			r--;
+		if (l<r)
+			numbers[l] = numbers[r];
+		while (l < r&&numbers[l] <= copy)
+			l++;
+		if (l < r)
+			numbers[r] = numbers[l];
+	}
+	numbers[l] = copy;
+	return l;
+}
+int MoreThanHalfNum_Solution2(vector<int> numbers) {
+	int len = numbers.size();
+
+	if (len == 0)
+		return 0;
+	int seq = 0, expectSeq = len / 2, left = 0, right = len - 1, result;
+	while (true) {
+		seq = Partition(numbers, left, right);
+		if (seq == expectSeq) {
+			result = numbers[seq];
+			break;
+		}
+		else if (seq < expectSeq)
+			left = seq + 1;
+		else
+			right = seq - 1;
+	}
+	int count = 0;
+	for (int i = 0; i < len; ++i) {
+		if (result == numbers[i])
+			count++;
+	}
+	if (count * 2 > len)
+		return result;
+	else
+		return 0;
+}
+
+//面试题40：最小的k个数
+int Partition_s(vector<int>& input, int left, int right) {
+	int l = left, r = right, copy = input[left];
+	while (l < r) {
+		while (l<r&&input[r]>copy)
+			r--;
+		if (l < r)
+			input[l] = input[r];
+		while (l < r&&input[l] <= copy)
+			l++;
+		if (l < r)
+			input[r] = input[l];
+	}
+	input[l] = copy;
+	return l;
+}
+//基于快排思想，会改变原数组
+vector<int> GetLeastNumbers_Solution(vector<int> input, int k) {
+	vector<int> result;
+	int len = input.size();
+	if (len == 0 || k <= 0 || k>len)
+		return result;
+	int left = 0, right = len - 1;
+	while (true) {
+		int seq = Partition_s(input, left, right);
+		if (seq == k - 1)
+			break;
+		else if (seq < k - 1)
+			left = seq + 1;
+		else
+			right = seq - 1;
+	}
+	for (int i = 0; i < k; ++i)
+		result.push_back(input[i]);
+	return result;
+}
+//基于大根堆，维护一个大小为k的大根堆保存最小的k的数
+vector<int> GetLeastNumbers_Solution2(vector<int> input, int k) {
+	vector<int> result;
+	int len = input.size();
+	if (len == 0 || k <= 0 || k > len)
+		return result;
+	priority_queue<int> q; //默认的比较函数less,生成大根堆；priority_queue<int, vector<int>, greater<int>> q;生成小根堆
+	for (int i = 0; i < len; ++i) {
+		if (q.size() < k) {
+			q.push(input[i]);
+		}
+		else if (input[i] < q.top()) {
+			q.pop();
+			q.push(input[i]);
+		}
+	}
+	for (int i = 0; i < k; ++i) {
+		result.push_back(q.top());
+		q.pop();
+	}
+	return result;
+}
 /*-------------------------字符串----------------------------*/
 
 //面试题5：替换空格
@@ -1345,119 +1475,9 @@ double Power(double base, int exponent) {
 
 
 
-//面试题39：数组中出现次数超过一半的数字
-int MoreThanHalfNum_Solution(vector<int> numbers) {
-	int len = numbers.size();
-	if (len == 0)
-		return 0;
-	int count = 0, mark;
-	for (int i = 0; i < len; ++i) {
-		if (count == 0) {
-			count++;
-			mark = numbers[i];
-		}
-		else if (numbers[i] == mark) {
-			count++;
-		}
-		else
-			count--;
-	}
-	count = 0;
-	for (int i = 0; i < len; ++i)//要检查是否真的存在出现次数大于一半的数字
-		if (numbers[i] == mark)
-			count++;
-	if (count * 2 > len)
-		return mark;
-	else
-		return 0;
-}
-//基于快速排序思想
-int Partition(vector<int>& numbers, int left, int right) {
-	int l = left, r = right, copy = numbers[l];
-	while (l < r) {
-		while (l<r&&numbers[r] > copy)
-			r--;
-		if (l<r)
-			numbers[l] = numbers[r];
-		while (l < r&&numbers[l] <= copy)
-			l++;
-		if (l < r)
-			numbers[r] = numbers[l];
-	}
-	numbers[l] = copy;
-	return l;
-
-}
-int MoreThanHalfNum_Solution2(vector<int> numbers) {
-	int len = numbers.size();
-
-	if (len == 0)
-		return 0;
-	int seq = 0, expectSeq = len / 2, left = 0, right = len - 1, result;
-	while (true) {
-		seq = Partition(numbers, left, right);
-		if (seq == expectSeq) {
-			result = numbers[seq];
-			break;
-		}
-		else if (seq < expectSeq)
-			left = seq + 1;
-		else
-			right = seq - 1;
-	}
-	int count = 0;
-	for (int i = 0; i < len; ++i) {
-		if (result == numbers[i])
-			count++;
-	}
-	if (count * 2 > len)
-		return result;
-	else
-		return 0;
-}
-
-//面试题40：最小的k个数
-int Partition_s(vector<int>& input, int left, int right) {
-	int l = left, r = right, copy = input[left];
-	while (l < r) {
-		while (l<r&&input[r]>copy)
-			r--;
-		if (l < r)
-			input[l] = input[r];
-		while (l < r&&input[l] <= copy)
-			l++;
-		if (l < r)
-			input[r] = input[l];
-	}
-	input[l] = copy;
-	return l;
-}
-//基于快排思想，会改变原数组
-vector<int> GetLeastNumbers_Solution(vector<int> input, int k) {
-	vector<int> result;
-	int len = input.size();
-	if (len == 0 || k <= 0 || k>len)
-		return result;
-	int left = 0, right = len - 1;
-	while (true) {
-		int seq = Partition_s(input, left, right);
-		if (seq == k - 1)
-			break;
-		else if (seq < k - 1)
-			left = seq + 1;
-		else
-			right = seq - 1;
-	}
-	for (int i = 0; i < k; ++i)
-		result.push_back(input[i]);
-	return result;
-}
-//TODO
-//vector<int> GetLeastNumbers_Solution2(vector<int> input, int k) {
-
-//}
-
 //面试题41：数据流中的中位数
+//维护一个大根堆、一个小根堆；小根堆中的数都大于等于大根堆中的数
+//依次使得小根堆、大根堆的元素个数加1
 class Solution41 {
 public:
 	void Insert(int num)

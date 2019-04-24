@@ -138,8 +138,6 @@ void sortColors_QuickSortCore(vector<int>& nums, int left, int right) {
 }
 void sortColors_QuickSort(vector<int>& nums) {
 	int len = nums.size();
-	if (len < 2)
-		return;
 	sortColors_QuickSortCore(nums, 0, len - 1);
 }
 
