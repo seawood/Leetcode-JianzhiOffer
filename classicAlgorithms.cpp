@@ -140,7 +140,7 @@ void sortColors_QuickSort(vector<int>& nums) {
 	int len = nums.size();
 	sortColors_QuickSortCore(nums, 0, len - 1);
 }
-
+ 
 /*
 *5.归并排序
 *算法：将两个有序序列归并成一个有序序列

@@ -2,6 +2,8 @@
 
 #ifndef SINGLETON3_H
 #define SINGLETON3_H
+
+#include <iostream>
 using namespace std;
 
 class Singleton3 {
@@ -11,7 +13,7 @@ class Singleton3 {
 	~Singleton3();
 	static Singleton3* instance;
 public:
-	static Singleton* getInstance();
+	static Singleton3* getInstance();
 };
 
 #endif  // SINGLETON3_H
