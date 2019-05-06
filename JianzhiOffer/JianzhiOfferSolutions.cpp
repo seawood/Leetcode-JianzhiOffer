@@ -285,6 +285,73 @@ vector<int> GetLeastNumbers_Solution2(vector<int> input, int k) {
 	}
 	return result;
 }
+
+//面试题41：数据流中的中位数
+//维护一个大根堆、一个小根堆；小根堆中的数都大于等于大根堆中的数
+//依次使得小根堆、大根堆的元素个数加1
+class Solution41 {
+public:
+	void Insert(int num)
+	{
+		if (((max.size() + min.size()) & 1) == 0)//插入最小堆.注意括号
+		{
+			if (max.size()>0 && max[0] > num) {
+				max.push_back(num);
+				push_heap(max.begin(), max.end(), less<int>());
+				num = max[0];
+				pop_heap(max.begin(), max.end(), less<int>());
+				max.pop_back();
+			}
+			min.push_back(num);
+			push_heap(min.begin(), min.end(), greater<int>());
+		}
+		else {
+			if (min.size() > 0 && num > min[0]) {
+				min.push_back(num);
+				push_heap(min.begin(), min.end(), greater<int>());
+				num = min[0];
+				pop_heap(min.begin(), min.end(), greater<int>());
+				min.pop_back();
+			}
+			max.push_back(num);
+			push_heap(max.begin(), max.end(), less<int>());
+		}
+	}
+
+	double GetMedian()
+	{
+		double medium;
+		if (max.size() == 0 && min.size() == 0)
+			medium = 0;
+		else if (((max.size() + min.size()) & 1) != 0)//注意括号
+			medium = min[0];
+		else
+			medium = ((double)max[0] + (double)min[0]) / 2;//先转出double再计算
+		return medium;
+
+	}
+private:
+	vector<int> max;
+	vector<int> min;
+
+};
+
+//面试题42：连续子数组的最大和
+int FindGreatestSumOfSubArray(vector<int> array) {
+	int len = array.size();
+	if (len == 0)
+		return 0;
+	int CurSum = array[0], maxSum = array[0];
+	for (int i = 1; i < len; ++i) {
+		if (array[i] + CurSum > array[i])
+			CurSum = array[i] + CurSum;
+		else
+			CurSum = array[i];
+		if (maxSum < CurSum)
+			maxSum = CurSum;
+	}
+	return maxSum;
+}
 /*-------------------------字符串----------------------------*/
 
 //面试题5：替换空格
@@ -1475,72 +1542,9 @@ double Power(double base, int exponent) {
 
 
 
-//面试题41：数据流中的中位数
-//维护一个大根堆、一个小根堆；小根堆中的数都大于等于大根堆中的数
-//依次使得小根堆、大根堆的元素个数加1
-class Solution41 {
-public:
-	void Insert(int num)
-	{
-		if (((max.size() + min.size()) & 1) == 0)//插入最小堆.注意括号
-		{
-			if (max.size()>0 && max[0] > num) {
-				max.push_back(num);
-				push_heap(max.begin(), max.end(), less<int>());
-				num = max[0];
-				pop_heap(max.begin(), max.end(), less<int>());
-				max.pop_back();
-			}
-			min.push_back(num);
-			push_heap(min.begin(), min.end(), greater<int>());
-		}
-		else {
-			if (min.size() > 0 && num > min[0]) {
-				min.push_back(num);
-				push_heap(min.begin(), min.end(), greater<int>());
-				num = min[0];
-				pop_heap(min.begin(), min.end(), greater<int>());
-				min.pop_back();
-			}
-			max.push_back(num);
-			push_heap(max.begin(), max.end(), less<int>());
-		}
-	}
 
-	double GetMedian()
-	{
-		double medium;
-		if (max.size() == 0 && min.size() == 0)
-			medium = 0;
-		else if (((max.size() + min.size()) & 1) != 0)//注意括号
-			medium = min[0];
-		else
-			medium = ((double)max[0] + (double)min[0]) / 2;//先转出double再计算
-		return medium;
 
-	}
-private:
-	vector<int> max;
-	vector<int> min;
 
-};
-
-//面试题42：连续子数组的最大和
-int FindGreatestSumOfSubArray(vector<int> array) {
-	int len = array.size();
-	if (len == 0)
-		return 0;
-	int CurSum = array[0], maxSum = array[0];
-	for (int i = 1; i < len; ++i) {
-		if (array[i] + CurSum > array[i])
-			CurSum = array[i] + CurSum;
-		else
-			CurSum = array[i];
-		if (maxSum < CurSum)
-			maxSum = CurSum;
-	}
-	return maxSum;
-}
 
 //面试题43：1~n整数中1出现的次数
 int NumberOf1Between1AndN(const char* num) {
