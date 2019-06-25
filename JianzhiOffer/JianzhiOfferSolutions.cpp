@@ -536,6 +536,109 @@ vector<string> Permutation(string str) {
 	return result;
 }
 
+//面试题43：1~n整数中1出现的次数
+int NumberOf1Between1AndN(const char* num) {
+	if (num == nullptr || *num<'0' || *num>'9' || *num == '\0')
+		return 0;
+	int len = strlen(num);
+	int first = *num - '0';
+	if (len == 1 && first >= 1)
+		return 1;
+	if (len == 1 && first < 1)
+		return 0;
+	int Sum1 = 0;
+	if (first > 1)
+		Sum1 = pow(10, len - 1);
+	else if (first == 1)//注意first可能是0
+		Sum1 = atoi(num + 1) + 1;
+	int Sum2 = first*(len - 1)*pow(10, len - 2);
+	int Sum3 = NumberOf1Between1AndN(num + 1);
+	return Sum1 + Sum2 + Sum3;
+}
+int NumberOf1Between1AndN_Solution(int n)
+{
+	if (n <= 0)
+		return 0;
+	char num[50];
+	sprintf_s(num, "%d", n);
+	return NumberOf1Between1AndN(num);
+}
+
+//面试题45：把数组排成最小的数(TODO)
+class Solution45 {
+	int g_maxNumLen = 10;
+	char* g_charNum1 = new char[g_maxNumLen * 2 + 1];
+	char* g_charNum2 = new char[g_maxNumLen * 2 + 1];
+	bool compare(const string num1, const string num2) {
+		const char* num1char = num1.c_str();
+		const char* num2char = num2.c_str();
+		strcpy_s(g_charNum1, strlen(num1char) + 1, num1char);
+		strcat_s(g_charNum1, strlen(num2char) + 1, num2char);
+		strcpy_s(g_charNum2, strlen(num2char) + 1, num2char);
+		strcat_s(g_charNum1, strlen(num1char) + 1, num1char);
+		return strcmp(g_charNum1, g_charNum2);
+	}
+	void partitionStrings(vector<string>& Numstrings, int left, int right) {
+		if (left >= right)
+			return;
+		int l = left, r = right;
+		string copy = Numstrings[l];
+		while (l < r) {
+			while (l < r&&compare(copy, Numstrings[r]))
+				r--;
+			if (l < r)
+				Numstrings[l] = Numstrings[r];
+			while (l < r&&compare(Numstrings[l], copy))
+				l++;
+			if (l < r)
+				Numstrings[r] = Numstrings[l];
+		}
+		Numstrings[l] = copy;
+		partitionStrings(Numstrings, left, l - 1);
+		partitionStrings(Numstrings, l + 1, right);
+	}
+	void sortStrings(vector<string>& Numstrings, int len) {
+		if (len == 1)
+			return;
+		int left = 0, right = len - 1, seq;
+		partitionStrings(Numstrings, left, right);
+	}
+public:
+	string PrintMinNumber(vector<int> numbers) {
+		int len = numbers.size();
+		string result;
+		if (len == 0)
+			return result;
+		vector<string> Numstrings;
+		for (int i = 0; i < len; ++i)
+			Numstrings.push_back(to_string(numbers[i]));
+
+		sortStrings(Numstrings, len);
+		for (int i = 0; i < len; ++i)
+			result += Numstrings[i];
+		return result;
+	}
+};
+
+//面试题46：把数字翻译成字符串
+int TransNum(const vector<int>& num) {
+	int len = num.size();
+	if (len <= 1)
+		return len;
+	vector<int> re(len, 0);
+	re[len - 1] = 1;
+	if (num[len - 2] * 10 + num[len - 1] < 26)
+		re[len - 2] = 2;
+	else
+		re[len - 2] = 1;
+	for (int i = len - 3; i >= 0; --i) {
+		if (num[i] * 10 + num[i + 1] < 26)
+			re[i] = re[i + 1] + re[i + 2];
+		else
+			re[i] = re[i + 1];
+	}
+	return re[0];
+}
 /*-------------------------链表----------------------------*/
 
 struct ListNode {
@@ -1345,6 +1448,39 @@ int jumpFloorII(int number) {
 	return re;
 }
 
+//面试题44：数字序列中某一位的数字
+int NthNumCore(const int& count, const int& n) {//所有具有count位中的数字的第n位
+	int first = pow(10, count - 1);
+	int num = first + n / count - 1;
+	if (n%count == 0)
+		return num % 10;
+	else {
+		num += 1;
+		int seqFromRight = count + 1 - (n%count);
+		int re;
+		for (int i = 0; i < seqFromRight; ++i) {
+			re = num % 10;
+			num /= 10;
+		}
+		return re;
+	}
+}
+int NthNum(int n) {
+	if (n <= 0)
+		return -1;
+	int count = 1;
+	while (true) {
+		int numOfCount = 9 * pow(10, count - 1);//有count位的数字一共占多少位
+		if (numOfCount > n) {
+			return NthNumCore(count, n);
+		}
+		else {
+			n -= numOfCount;
+			count++;
+		}
+	}
+}
+
 /*-------------------------查找和排序----------------------------*/
 
 //面试题11：旋转数组的最小数字
@@ -1546,141 +1682,11 @@ double Power(double base, int exponent) {
 
 
 
-//面试题43：1~n整数中1出现的次数
-int NumberOf1Between1AndN(const char* num) {
-	if (num == nullptr || *num<'0' || *num>'9' || *num == '\0')
-		return 0;
-	int len = strlen(num);
-	int first = *num - '0';
-	if (len == 1 && first >= 1)
-		return 1;
-	if (len == 1 && first < 1)
-		return 0;
-	int Sum1 = 0;
-	if (first > 1)
-		Sum1 = pow(10, len - 1);
-	else if (first == 1)//注意first可能是0
-		Sum1 = atoi(num + 1) + 1;
-	int Sum2 = first*(len - 1)*pow(10, len - 2);
-	int Sum3 = NumberOf1Between1AndN(num + 1);
-	return Sum1 + Sum2 + Sum3;
-}
-int NumberOf1Between1AndN_Solution(int n)
-{
-	if (n <= 0)
-		return 0;
-	char num[50];
-	sprintf_s(num, "%d", n);
-	return NumberOf1Between1AndN(num);
-}
 
-//面试题44：数字序列中某一位的数字
-int NthNumCore(const int& count, const int& n) {//所有具有count位中的数字的第n位
-	int first = pow(10, count - 1);
-	int num = first + n / count - 1;
-	if (n%count == 0)
-		return num % 10;
-	else {
-		num += 1;
-		int seqFromRight = count + 1 - (n%count);
-		int re;
-		for (int i = 0; i < seqFromRight; ++i) {
-			re = num % 10;
-			num /= 10;
-		}
-		return re;
-	}
-}
-int NthNum(int n) {
-	if (n <= 0)
-		return -1;
-	int count = 1;
-	while (true) {
-		int numOfCount = 9 * pow(10, count - 1);//有count位的数字一共占多少位
-		if (numOfCount > n) {
-			return NthNumCore(count, n);
-		}
-		else {
-			n -= numOfCount;
-			count++;
-		}
-	}
-}
-//面试题45：把数组排成最小的数(TODO)
-class Solution45 {
-	int g_maxNumLen = 10;
-	char* g_charNum1 = new char[g_maxNumLen * 2 + 1];
-	char* g_charNum2 = new char[g_maxNumLen * 2 + 1];
-	bool compare(const string num1, const string num2) {
-		const char* num1char = num1.c_str();
-		const char* num2char = num2.c_str();
-		strcpy_s(g_charNum1, strlen(num1char) + 1, num1char);
-		strcat_s(g_charNum1, strlen(num2char) + 1, num2char);
-		strcpy_s(g_charNum2, strlen(num2char) + 1, num2char);
-		strcat_s(g_charNum1, strlen(num1char) + 1, num1char);
-		return strcmp(g_charNum1, g_charNum2);
-	}
-	void partitionStrings(vector<string>& Numstrings, int left, int right) {
-		if (left >= right)
-			return;
-		int l = left, r = right;
-		string copy = Numstrings[l];
-		while (l < r) {
-			while (l < r&&compare(copy, Numstrings[r]))
-				r--;
-			if (l < r)
-				Numstrings[l] = Numstrings[r];
-			while (l < r&&compare(Numstrings[l], copy))
-				l++;
-			if (l < r)
-				Numstrings[r] = Numstrings[l];
-		}
-		Numstrings[l] = copy;
-		partitionStrings(Numstrings, left, l - 1);
-		partitionStrings(Numstrings, l + 1, right);
-	}
-	void sortStrings(vector<string>& Numstrings, int len) {
-		if (len == 1)
-			return;
-		int left = 0, right = len - 1, seq;
-		partitionStrings(Numstrings, left, right);
-	}
-public:
-	string PrintMinNumber(vector<int> numbers) {
-		int len = numbers.size();
-		string result;
-		if (len == 0)
-			return result;
-		vector<string> Numstrings;
-		for (int i = 0; i < len; ++i)
-			Numstrings.push_back(to_string(numbers[i]));
 
-		sortStrings(Numstrings, len);
-		for (int i = 0; i < len; ++i)
-			result += Numstrings[i];
-		return result;
-	}
-};
 
-//面试题46：把数字翻译成字符串
-int TransNum(const vector<int>& num) {
-	int len = num.size();
-	if (len <= 1)
-		return len;
-	vector<int> re(len, 0);
-	re[len - 1] = 1;
-	if (num[len - 2] * 10 + num[len - 1] < 26)
-		re[len - 2] = 2;
-	else
-		re[len - 2] = 1;
-	for (int i = len - 3; i >= 0; --i) {
-		if (num[i] * 10 + num[i + 1] < 26)
-			re[i] = re[i + 1] + re[i + 2];
-		else
-			re[i] = re[i + 1];
-	}
-	return re[0];
-}
+
+
 //面试题47：礼物的最大价值
 int MaxPresentsValue1(const vector<vector<int>>& present) {
 	int row = present.size();

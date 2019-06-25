@@ -148,6 +148,7 @@ void sortColors_QuickSort(vector<int>& nums) {
 *空间：辅助空间大小O(n)
 *稳定性：稳定
 */
+//up to bottom递归版
 void merge(vector<int>& nums, int left, int mid, int right) {
 	vector<int> numsCopy(nums.begin() + left, nums.begin() + right + 1);
 	int i = 0, j = mid - left + 1, walk = left;
@@ -175,6 +176,82 @@ void sortColors_mergeSort(vector<int>& nums) {
 	sortColors_mergeSortCore(nums, 0, len - 1);
 }
 
+//bottom to up迭代版
+void mergeIterative(vector<int>& nums, const int& left, const int& mid, const int& right) {
+	if (nums.begin()+mid == nums.end())
+		return;
+	vector<int> numsCopy(nums.begin() + left, nums.begin() + right);
+	int i = 0, j = mid-left, walk = left;
+	while (i < mid - left && j < right - left) {
+		if (numsCopy[i] <= numsCopy[j]) {
+			nums[walk++] = numsCopy[i++];
+		}
+		else {
+			nums[walk++] = numsCopy[j++];
+		}
+	}
+	while (i < mid - left)
+		nums[walk++] = numsCopy[i++];
+	while (j < right - left)
+		nums[walk++] = numsCopy[j++];
+}
+void sortColors_mergeSortIterative(vector<int>& nums) {
+	int len = nums.size();
+	for (int size = 1; size < len; size << 1) {
+		for (int left = 0; left < len; left += 2 * size) {
+			int mid = min(left + size, len);
+			int right = min(left + 2 * size, len);
+			mergeIterative(nums, left,mid, right);//归并[left,mid),[mid,right),mid可能为end因此后半段可能不存在
+		}
+	}
+}
+//链表排序，O（nlogn), 固定空间复杂度 TODO
+ListNode* getNode(ListNode* begin, int size) {
+	while (begin!=nullptr && size > 0) {
+		begin = begin->next;
+		size--;
+	}
+	return begin;
+}
+void mergeList(ListNode* left, ListNode* mid, ListNode* right) {
+	ListNode* preHead1 = new ListNode(0), *preHead2 = new ListNode(0);
+	preHead1->next = left;
+	preHead2->next = mid;
+	ListNode* dummyHead = preHead1;
+	while (left != mid && mid != right) {
+		if (left->val <= mid->val) {
+			left = left->next;
+			preHead1 = preHead1->next;
+		}
+		else {
+			preHead2->next = mid->next;
+			preHead1->next = mid;
+			mid->next = left;
+			preHead1 = mid;
+			mid = preHead2->next;
+		}
+	}
+}
+ListNode *sortList(ListNode *head) {
+	int len = 0; 
+	ListNode* walk = head;
+	while (walk != nullptr) {
+		len++;
+		walk = walk->next;
+	}
+	for (int size = 1; size < len; size <<= 1) {
+		ListNode* left = head;
+		ListNode* preHead = new ListNode(0);
+		preHead->next = head;
+		while (left != nullptr) {
+			ListNode* mid = getNode(left, size);
+			ListNode* right = getNode(mid, size);
+			mergeList(left, mid, right);//[left,mid)[mid,right)
+			left = right;
+		}
+	}
+	return 
+}
 /*
 *6.堆排序
 *算法：把最大堆的堆首元素与无序序列的最后一个元素交换，重构无序序列构成的最大堆，重复上述步骤，直到无序序列长度为1
