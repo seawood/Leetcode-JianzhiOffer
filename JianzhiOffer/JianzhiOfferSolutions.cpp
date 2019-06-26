@@ -585,25 +585,7 @@ public:
 	}
 };
 
-//面试题46：把数字翻译成字符串
-int TransNum(const vector<int>& num) {
-	int len = num.size();
-	if (len <= 1)
-		return len;
-	vector<int> re(len, 0);
-	re[len - 1] = 1;
-	if (num[len - 2] * 10 + num[len - 1] < 26)
-		re[len - 2] = 2;
-	else
-		re[len - 2] = 1;
-	for (int i = len - 3; i >= 0; --i) {
-		if (num[i] * 10 + num[i + 1] < 26)
-			re[i] = re[i + 1] + re[i + 2];
-		else
-			re[i] = re[i + 1];
-	}
-	return re[0];
-}
+
 /*-------------------------链表----------------------------*/
 
 struct ListNode {
@@ -1593,64 +1575,25 @@ int maxProductAfterCutting1(int length) {
 	return ((int)pow(3, timesOfThree)*(int)pow(2, timesOfTwo));
 }
 
-/*-------------------------位运算----------------------------*/
-
-//面试题15：二进制中1的个数
-//把1个整数减去1再与原来的数做&运算，会把最右边的1变成0，整数中有几个1就循环几次
-int  NumberOf1(int n) {
-	int count = 0;
-	while (n) {
-		count++;
-		n = (n - 1)&n;  
+//面试题46：把数字翻译成字符串
+int TransNum(const vector<int>& num) {
+	int len = num.size();
+	if (len <= 1)
+		return len;
+	vector<int> re(len, 0);
+	re[len - 1] = 1;
+	if (num[len - 2] * 10 + num[len - 1] < 26)
+		re[len - 2] = 2;
+	else
+		re[len - 2] = 1;
+	for (int i = len - 3; i >= 0; --i) {
+		if (num[i] * 10 + num[i + 1] < 26)
+			re[i] = re[i + 1] + re[i + 2];
+		else
+			re[i] = re[i + 1];
 	}
-	return count;
+	return re[0];
 }
-
-/*-------------------------代码的完整性----------------------------*/
-
-//面试题16：数值的整数次方（不得使用库函数，不考虑大数问题）
-//非法输入：底数是0，指数是负数。可以用返回值、全局变量、异常告诉调用者出现了错误
-//0的0次方在数学上没有意义，输出0或1都行
-//求a的n次方，可以分解成：若n为偶数a^n=a^(n/2)*a^(n/2)，若n为奇数a^n=a^((n-1)/2)*a^((n-1)/2)*a
-//用位运算判断奇数偶数
-int invalidInput = false;
-double PowerCore(double base, int exponent) {
-	if (exponent == 0)
-		return 1.0;
-	if (exponent == 1)
-		return base;
-	double result = PowerCore(base, exponent >> 1);
-	result *= result;
-	if ((exponent & 0x01) == 1)
-		result *= base;
-	return result;
-}
-double Power(double base, int exponent) {
-	invalidInput = false;
-	if (base == 0.0 && exponent < 0) {
-		invalidInput = true;
-		return 0;
-	}
-	int absexponent = exponent;
-	if (exponent < 0)
-		absexponent = -exponent;
-	double re = PowerCore(base, absexponent);
-	if (exponent < 0)
-		return 1.0 / re;
-	return re;
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 //面试题47：礼物的最大价值
 int MaxPresentsValue1(const vector<vector<int>>& present) {
@@ -1726,7 +1669,55 @@ int longestSubstringWithoutDuplicate(const string& s) {
 	delete[] longest;
 	return result;
 }
+/*-------------------------位运算----------------------------*/
 
+//面试题15：二进制中1的个数
+//把1个整数减去1再与原来的数做&运算，会把最右边的1变成0，整数中有几个1就循环几次
+int  NumberOf1(int n) {
+	int count = 0;
+	while (n) {
+		count++;
+		n = (n - 1)&n;  
+	}
+	return count;
+}
+
+/*-------------------------代码的完整性----------------------------*/
+
+//面试题16：数值的整数次方（不得使用库函数，不考虑大数问题）
+//非法输入：底数是0，指数是负数。可以用返回值、全局变量、异常告诉调用者出现了错误
+//0的0次方在数学上没有意义，输出0或1都行
+//求a的n次方，可以分解成：若n为偶数a^n=a^(n/2)*a^(n/2)，若n为奇数a^n=a^((n-1)/2)*a^((n-1)/2)*a
+//用位运算判断奇数偶数
+int invalidInput = false;
+double PowerCore(double base, int exponent) {
+	if (exponent == 0)
+		return 1.0;
+	if (exponent == 1)
+		return base;
+	double result = PowerCore(base, exponent >> 1);
+	result *= result;
+	if ((exponent & 0x01) == 1)
+		result *= base;
+	return result;
+}
+double Power(double base, int exponent) {
+	invalidInput = false;
+	if (base == 0.0 && exponent < 0) {
+		invalidInput = true;
+		return 0;
+	}
+	int absexponent = exponent;
+	if (exponent < 0)
+		absexponent = -exponent;
+	double re = PowerCore(base, absexponent);
+	if (exponent < 0)
+		return 1.0 / re;
+	return re;
+}
+
+
+//--------------空间换时间--------------------
 //面试题49：丑数 TODO
 int Min(const int& num1, const int& num2, const int& num3) {
 	int re = (num1 <= num2 ? num1 : num2);
@@ -1797,6 +1788,9 @@ int FirstNotRepeatingCharInStream(const string& str) {
 	delete[] mark;
 	return minIndex;
 }
+
+
+
 
 //面试题51：数组中的逆序对，输出P%1000000007（类似归并排序)
 void MergeCount(vector<int>& data, const int& left, const int& mid, const int& right, long& pairs) {
