@@ -559,63 +559,28 @@ int NumberOf1Between1AndN_Solution(int n)
 {
 	if (n <= 0)
 		return 0;
-	char num[50];
+	char num[11]; //int最大2147483647
 	sprintf_s(num, "%d", n);
 	return NumberOf1Between1AndN(num);
 }
 
-//面试题45：把数组排成最小的数(TODO)
+//面试题45：把数组排成最小的数
 class Solution45 {
-	int g_maxNumLen = 10;
-	char* g_charNum1 = new char[g_maxNumLen * 2 + 1];
-	char* g_charNum2 = new char[g_maxNumLen * 2 + 1];
-	bool compare(const string num1, const string num2) {
-		const char* num1char = num1.c_str();
-		const char* num2char = num2.c_str();
-		strcpy_s(g_charNum1, strlen(num1char) + 1, num1char);
-		strcat_s(g_charNum1, strlen(num2char) + 1, num2char);
-		strcpy_s(g_charNum2, strlen(num2char) + 1, num2char);
-		strcat_s(g_charNum1, strlen(num1char) + 1, num1char);
-		return strcmp(g_charNum1, g_charNum2);
-	}
-	void partitionStrings(vector<string>& Numstrings, int left, int right) {
-		if (left >= right)
-			return;
-		int l = left, r = right;
-		string copy = Numstrings[l];
-		while (l < r) {
-			while (l < r&&compare(copy, Numstrings[r]))
-				r--;
-			if (l < r)
-				Numstrings[l] = Numstrings[r];
-			while (l < r&&compare(Numstrings[l], copy))
-				l++;
-			if (l < r)
-				Numstrings[r] = Numstrings[l];
-		}
-		Numstrings[l] = copy;
-		partitionStrings(Numstrings, left, l - 1);
-		partitionStrings(Numstrings, l + 1, right);
-	}
-	void sortStrings(vector<string>& Numstrings, int len) {
-		if (len == 1)
-			return;
-		int left = 0, right = len - 1, seq;
-		partitionStrings(Numstrings, left, right);
+	static bool compare(int num1, int num2) {
+		string A = "", B = "";
+		A += to_string(num1);
+		A += to_string(num2);
+		B += to_string(num2);
+		B += to_string(num1);
+		return A < B;
 	}
 public:
 	string PrintMinNumber(vector<int> numbers) {
-		int len = numbers.size();
-		string result;
-		if (len == 0)
-			return result;
-		vector<string> Numstrings;
-		for (int i = 0; i < len; ++i)
-			Numstrings.push_back(to_string(numbers[i]));
-
-		sortStrings(Numstrings, len);
-		for (int i = 0; i < len; ++i)
-			result += Numstrings[i];
+		sort(numbers.begin(), numbers.end(), compare);
+		string result = "";
+		for (auto& i : numbers) {
+			result += to_string(i);
+		}
 		return result;
 	}
 };
