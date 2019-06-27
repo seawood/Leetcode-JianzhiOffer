@@ -1669,6 +1669,33 @@ int longestSubstringWithoutDuplicate(const string& s) {
 	delete[] longest;
 	return result;
 }
+int longestSubstringWithoutDuplicate2(const string& s) { // 只需要保存前面一个记录值
+	int len = s.size();
+	if (len == 0)
+		return 0;
+	int mark[26];
+	for (int i = 0; i < 26; ++i)
+		mark[i] = -1;
+	mark[s[0] - 'a'] = 0;
+	int preLongest = 1, longest = 0;
+	for (int i = 1; i < len; ++i) {
+		int j = s[i] - 'a';
+		if (mark[j] == -1) {
+			mark[j] = i;
+			longest = preLongest + 1;
+		}
+		else {
+			int d = i - mark[j];
+			mark[j] = i;
+			if (d > preLongest)
+				longest = preLongest + 1;
+			else
+				longest = d;
+		}
+		preLongest = longest;
+	}
+	return longest;
+}
 /*-------------------------位运算----------------------------*/
 
 //面试题15：二进制中1的个数
@@ -1718,29 +1745,24 @@ double Power(double base, int exponent) {
 
 
 //--------------空间换时间--------------------
-//面试题49：丑数 TODO
-int Min(const int& num1, const int& num2, const int& num3) {
-	int re = (num1 <= num2 ? num1 : num2);
-	re = (re <= num3 ? re : num3);
-	return re;
-}
+//面试题49：丑数
 int GetUglyNumber_Solution(int index) {
-	if (index <= 0)
-		return 0;
-	int* uglyNumbers = new int(index);
-	uglyNumbers[0] = 1;
-	int T2 = 0, T3 = 0, T5 = 0;
+	if (index == 1)
+		return 1;
+	int* mark = new int[index];
+	mark[0] = 1;
+	int I2 = 0, I3 = 0, I5 = 0;
 	for (int i = 1; i < index; ++i) {
-		while (uglyNumbers[T2] * 2 <= uglyNumbers[i - 1] && T2 < i)
-			++T2;
-		while (uglyNumbers[T3] * 3 <= uglyNumbers[i - 1] && T3 < i)
-			++T3;
-		while (uglyNumbers[T5] * 5 <= uglyNumbers[i - 1] && T5 < i)
-			++T5;
-		uglyNumbers[i] = Min(uglyNumbers[T2] * 2, uglyNumbers[T3] * 3, uglyNumbers[T5] * 5);
+		mark[i] = min(2 * mark[I2], min(3 * mark[I3], 5 * mark[I5]));
+		while (2 * mark[I2] <= mark[i])
+			I2++;
+		while (3 * mark[I3] <= mark[i])
+			I3++;
+		while (5 * mark[I5] <= mark[i])
+			I5++;
 	}
-	int result = uglyNumbers[index - 1];
-	delete[] uglyNumbers;
+	int result = mark[index - 1];
+	delete[] mark;
 	return result;
 }
 
