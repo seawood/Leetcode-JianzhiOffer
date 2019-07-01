@@ -1457,6 +1457,161 @@ int minNumberInRotateArray(vector<int> rotateArray) {  // ¸ø³öµÄËùÓĞÔªËØ¶¼´óÓÚ0£
 	return rotateArray[mid];
 }
 
+//ÃæÊÔÌâ51£ºÊı×éÖĞµÄÄæĞò¶Ô£¬Êä³öP%1000000007£¨ÀàËÆ¹é²¢ÅÅĞò)
+void MergeCount(vector<int>& data, const int& left, const int& mid, const int& right, long& pairs) {
+	vector<int> copy(data.begin() + left, data.begin() + right + 1);
+	int P1 = mid - left, P2 = right - left, P3 = right, rightLen = right - mid;
+	while (P1 >= 0 && P2 > mid - left) {
+		if (copy[P1] > copy[P2]) {
+			pairs += rightLen;
+			data[P3] = copy[P1];
+			P1--;
+			P3--;
+		}
+		else {
+			data[P3] = copy[P2];
+			P2--;
+			rightLen--;
+			P3--;
+		}
+	}
+	while (P1 >= 0) {
+		data[P3--] = copy[P1--];
+	}
+	while (P2 > mid - left) {
+		data[P3--] = copy[P2--];
+	}
+}
+void InversePairsCore(vector<int>& data, const int& left, const int& right, long& pairs) {
+	if (right - left < 1)
+		return;
+	int mid = (left + right) / 2;
+	InversePairsCore(data, left, mid, pairs);
+	InversePairsCore(data, mid + 1, right, pairs);
+	MergeCount(data, left, mid, right, pairs);
+}
+int InversePairs(vector<int> data) {
+	int len = data.size();
+	if (len < 2)
+		return 0;
+	long pairs = 0;
+	InversePairsCore(data, 0, len - 1, pairs);
+	return pairs % 1000000007;
+}
+// 51ÌâÖØ¹¹´úÂë£¬ÈÔÈ»ÊÇ¹é²¢ÅÅĞò
+class Solution {
+public:
+	int InversePairs(vector<int> data) {
+		int len = data.size();
+		vector<int> copyData;
+		for (auto& i : data)
+			copyData.push_back(i);
+		return CountPairs(data, copyData, 0, len - 1) % 1000000007;
+	}
+private:
+	long CountPairs(vector<int>& data, vector<int>& copyData, int left, int right) {  // [left, right],ÅÅºÃĞòµÄ·ÅÔÚCopyDataÊı×é
+		if (left == right)
+			return 0;
+		int mid = (left + right) / 2;
+		long leftCount = CountPairs(copyData, data, left, mid);  //×¢ÒâÕâÀïcopyDataºÍdata»»ÁËÎ»ÖÃ
+		long rightCount = CountPairs(copyData, data, mid + 1, right);
+		int rightLen = right - mid, i = mid, j = right, walk = right;
+		long count = 0;
+		while (i >= left && j > mid) {
+			if (data[i] > data[j]) {
+				copyData[walk--] = data[i--];
+				count += rightLen;
+			}
+			else {
+				copyData[walk--] = data[j--];
+				rightLen--;
+			}
+		}
+		while (i >= left)
+			copyData[walk--] = data[i--];
+		while (j > mid)
+			copyData[walk--] = data[j--];
+		return leftCount + rightCount + count;
+	}
+};
+
+//ÃæÊÔÌâ53£ºÔÚÅÅĞòÊı×éÖĞ²éÕÒÊı×Ö
+//Êı×ÖÔÚÅÅĞòÊı×éÖĞ³öÏÖµÄ´ÎÊı
+int FirstPlace(const vector<int>& data, int left, int right, const int& k) {
+	if (right < left)
+		return -1;
+	int mid = (left + right) / 2;
+	if (data[mid] > k || (data[mid] == k&&mid - 1 >= left&&data[mid - 1] == k))
+		right = mid - 1;
+	else if (data[mid] < k)
+		left = mid + 1;
+	else
+		return mid;
+	return FirstPlace(data, left, right, k);
+}
+int LastPlace(const vector<int>& data, int left, int right, const int& k) {
+	if (right < left)
+		return -1;
+	int mid = (left + right) / 2;
+	if (data[mid] > k)
+		right = mid - 1;
+	else if (data[mid] < k || (data[mid] == k&&mid + 1 <= right&&data[mid + 1] == k))
+		left = mid + 1;
+	else
+		return mid;
+	return LastPlace(data, left, right, k);
+}
+int GetNumberOfK(vector<int> data, int k) {
+	int number = 0;
+	int len = data.size();
+	if (len > 0) {
+		int first = FirstPlace(data, 0, len - 1, k);
+		int last = LastPlace(data, 0, len - 1, k);
+		if (first != -1 && last != -1)
+			number = last - first + 1;
+	}
+	return number;
+}
+
+//0~nÖĞÈ±Ê§µÄÊı×Ö£¬Êı×éÊÇÅÅºÃĞòµÄ
+int MissNumber(vector<int> data) {
+	int len = data.size();
+	if (len == 0)
+		return -1;
+	int left = 0, right = len - 1;
+	while (left <= right) {
+		int mid = (left + right) / 2;
+		if (data[mid] != mid) {
+			if (mid == 0 || data[mid - 1] == mid - 1)
+				return mid;
+			right = mid - 1;
+		}
+		else
+			left = mid + 1;
+	}
+	if (left == len)
+		return len;
+	return -1; //ÎŞĞ§ÊäÈë
+}
+//Êı×éÖĞÊıÖµºÍĞ¡±êÏàµÈµÄÔªËØ,Êı×éÊÇµİÔöµÄ²¢ÇÒÃ¿¸öÔªËØ¶¼ÊÇÕûÊıÇÒÎ¨Ò»
+int GetNumberSameAsIndex(const vector<int>& data) {
+	int len = data.size();
+	if (len == 0)
+		return -1;
+	int left = 0, right = len - 1;
+	while (left <= right) {
+		int mid = (left + right) / 2;
+		if (data[mid] == mid)
+			return mid;
+		else if (data[mid] > mid)
+			right = mid - 1;
+		else
+			left = mid + 1;
+	}
+	return -1;
+}
+
+
 /*-------------------------»ØËİ·¨----------------------------*/
 
 //ÃæÊÔÌâ12£º¾ØÕóÖĞµÄÂ·¾¶
@@ -1814,124 +1969,7 @@ int FirstNotRepeatingCharInStream(const string& str) {
 
 
 
-//ÃæÊÔÌâ51£ºÊı×éÖĞµÄÄæĞò¶Ô£¬Êä³öP%1000000007£¨ÀàËÆ¹é²¢ÅÅĞò)
-void MergeCount(vector<int>& data, const int& left, const int& mid, const int& right, long& pairs) {
-	vector<int> copy(data.begin() + left, data.begin() + right + 1);
-	int P1 = mid - left, P2 = right - left, P3 = right, rightLen = right - mid;
-	while (P1 >= 0 && P2 > mid - left) {
-		if (copy[P1] > copy[P2]) {
-			pairs += rightLen;
-			data[P3] = copy[P1];
-			P1--;
-			P3--;
-		}
-		else {
-			data[P3] = copy[P2];
-			P2--;
-			rightLen--;
-			P3--;
-		}
-	}
-	while (P1 >= 0) {
-		data[P3--] = copy[P1--];
-	}
-	while (P2 > mid - left) {
-		data[P3--] = copy[P2--];
-	}
-}
-void InversePairsCore(vector<int>& data, const int& left, const int& right, long& pairs) {
-	if (right - left < 1)
-		return;
-	int mid = (left + right) / 2;
-	InversePairsCore(data, left, mid, pairs);
-	InversePairsCore(data, mid + 1, right, pairs);
-	MergeCount(data, left, mid, right, pairs);
-}
-int InversePairs(vector<int> data) {
-	int len = data.size();
-	if (len < 2)
-		return 0;
-	long pairs = 0;
-	InversePairsCore(data, 0, len - 1, pairs);
-	return pairs % 1000000007;
-}
-
-
-
-//ÃæÊÔÌâ53£ºÔÚÅÅĞòÊı×éÖĞ²éÕÒÊı×Ö
-int FirstPlace(const vector<int>& data, int left, int right, const int& k) {
-	if (right < left)
-		return -1;
-	int mid = (left + right) / 2;
-	if (data[mid] > k || (data[mid] == k&&mid - 1 >= left&&data[mid - 1] == k))
-		right = mid - 1;
-	else if (data[mid] < k)
-		left = mid + 1;
-	else
-		return mid;
-	return FirstPlace(data, left, right, k);
-}
-int LastPlace(const vector<int>& data, int left, int right, const int& k) {
-	if (right < left)
-		return -1;
-	int mid = (left + right) / 2;
-	if (data[mid] > k)
-		right = mid - 1;
-	else if (data[mid] < k || (data[mid] == k&&mid + 1 <= right&&data[mid + 1] == k))
-		left = mid + 1;
-	else
-		return mid;
-	return LastPlace(data, left, right, k);
-}
-int GetNumberOfK(vector<int> data, int k) {
-	int number = 0;
-	int len = data.size();
-	if (len > 0) {
-		int first = FirstPlace(data, 0, len - 1, k);
-		int last = LastPlace(data, 0, len - 1, k);
-		if (first != -1 && last != -1)
-			number = last - first + 1;
-	}
-	return number;
-}
-
-//0~nÖĞÈ±Ê§µÄÊı×Ö£¬Êı×éÊÇÅÅºÃĞòµÄ
-int MissNumberCore(const vector<int>& data, int left, int right) {
-	if (right < left)
-		return -1;
-	int mid = (left + right) / 2;
-	if (data[mid] == mid)
-		left = mid + 1;
-	else if (data[mid] != mid&&mid - 1 >= 0 && data[mid - 1] != mid - 1)
-		right = mid - 1;
-	else if (data[mid] != mid&&mid - 1 >= 0 && data[mid - 1] == mid - 1)
-		return mid;
-	return MissNumberCore(data, left, right);
-}
-int MissNumber(vector<int> data) {
-	int len = data.size();
-	return MissNumberCore(data, 0, len - 1);
-}
-
-//Êı×éÖĞÊıÖµºÍĞ¡±êÏàµÈµÄÔªËØ,Êı×éÊÇµİÔöµÄ²¢ÇÒÃ¿¸öÔªËØ¶¼ÊÇÕûÊıÇÒÎ¨Ò»
-int GetNumberSameAsIndex(const vector<int>& data) {
-	int len = data.size();
-	if (len == 0)
-		return -1;
-	int left = 0, right = len - 1;
-	while (left <= right) {
-		int mid = (left + right) / 2;
-		if (data[mid] == mid)
-			return mid;
-		else if (data[mid] > mid)
-			right = mid - 1;
-		else
-			left = mid + 1;
-	}
-	return -1;
-}
-
-//¶ş²æËÑË÷Ê÷µÄµÚK´ó½Úµã
+//ÃæÊÔÌâ54£º¶ş²æËÑË÷Ê÷µÄµÚK´ó½Úµã
 TreeNode* KthNode(TreeNode* pRoot, int k)
 {
 	stack<TreeNode*> s;
