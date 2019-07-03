@@ -1278,6 +1278,85 @@ TreeNode* Deserialize(char *str) {
 	return root;
 }
 
+//面试题54：二叉搜索树的第K大节点
+TreeNode* KthNode(TreeNode* pRoot, int k)
+{
+	stack<TreeNode*> s;
+	TreeNode* ans = nullptr;
+	while (k) {
+		if (pRoot) {
+			s.push(pRoot);
+			pRoot = pRoot->left;
+		}
+		else if (!s.empty()) {
+			k--;
+			ans = s.top();
+			pRoot = s.top()->right;
+			s.pop();
+		}
+		else
+			break;
+	}
+	return k>0 ? nullptr : ans;
+}
+
+//面试题55：二叉树的深度
+//解法1：递归
+int TreeDepth1(TreeNode* pRoot)
+{
+	if (pRoot == nullptr)
+		return 0;
+	int left = TreeDepth(pRoot->left);
+	int right = TreeDepth(pRoot->right);
+	return left > right ? left + 1 : right + 1;
+}
+//解法2：层次遍历
+int TreeDepth2(TreeNode* pRoot)
+{
+	if (pRoot == nullptr)
+		return 0;
+	queue<TreeNode*> q;
+	q.push(pRoot);
+	int res = 0;
+	while (!q.empty()) {
+		int len = q.size();
+		while (len) {
+			if (q.front()->left != nullptr)
+				q.push(q.front()->left);
+			if (q.front()->right != nullptr)
+				q.push(q.front()->right);
+			len--;
+			q.pop();
+		}
+		res++;
+	}
+	return res;
+}
+//判断一棵二叉树是否为平衡二叉树
+//后序遍历，并且更新深度值
+class Solution {
+public:
+	bool IsBalanced_Solution(TreeNode* pRoot) {
+		int depth = 0;
+		return isBalanced(pRoot, depth);
+	}
+private:
+	bool isBalanced(TreeNode* pRoot, int& depth) {
+		if (pRoot == nullptr)
+		{
+			depth = 0;
+			return true;
+		}
+		int left = 0, right = 0;
+		if (isBalanced(pRoot->left, left) && isBalanced(pRoot->right, right)) {
+			if (left - right >= -1 && left - right <= 1) {
+				depth = max(left, right) + 1;
+				return true;
+			}
+		}
+		return false;
+	}
+};
 /*-------------------------栈和队列----------------------------*/
 
 //面试题9：用两个栈实现队列
@@ -1863,7 +1942,44 @@ int  NumberOf1(int n) {
 	}
 	return count;
 }
-
+//面试题56：数组中只出现一次的两个数字，其他数字都出现两次
+//如果数组中只有一个数字出现一次，其他数字都出现两次，那么可以通过异或操作找到这个数组
+//推广到有两个数字出现一次的情况，可以把这个数字分为两个数组，每个数组都只有一个数字出现一次
+void FindNumsAppearOnce(vector<int> data, int* num1, int *num2) {
+	int mark = 0;
+	for (auto& i : data)
+		mark = mark^i;
+	int temp = 1;
+	while ((mark & temp) == 0) {  //通过mark从右边数第一位是否为0分割数组
+		temp = temp << 1;
+	}
+	for (auto& i : data) {
+		if ((i&temp) == 0)
+			*num1 = (*num1) ^ i;
+		else
+			*num2 = (*num2) ^ i;
+	}
+}
+//数组中只出现一次的数字，其他数字都出现三次
+//统计每一位出现1的次数，%3
+int FindNumAppearOnce(vector<int> nums) {
+	int len = nums.size();
+	int mark[32] = { 0 };
+	for (int i = 0; i < len; ++i) {
+		int bitMask = 1;
+		for (int j = 0; j < 32; ++j) {
+			if ((nums[i] & bitMask) != 0)
+				++mark[j];
+			bitMask = bitMask << 1;
+		}
+	}
+	int ans = 0;
+	for (int i = 31; i >= 0; --i) {
+		ans = ans << 1;
+		ans += (mark[i] % 3);
+	}
+	return ans;
+}
 /*-------------------------代码的完整性----------------------------*/
 
 //面试题16：数值的整数次方（不得使用库函数，不考虑大数问题）
@@ -1967,108 +2083,6 @@ int FirstNotRepeatingCharInStream(const string& str) {
 }
 
 
-
-
-//面试题54：二叉搜索树的第K大节点
-TreeNode* KthNode(TreeNode* pRoot, int k)
-{
-	stack<TreeNode*> s;
-	TreeNode* ans = nullptr;
-	while (k) {
-		if (pRoot) {
-			s.push(pRoot);
-			pRoot = pRoot->left;
-		}
-		else if (!s.empty()) {
-			k--;
-			ans = s.top();
-			pRoot = s.top()->right;
-			s.pop();
-		}
-		else
-			break;
-	}
-	return k>0 ? nullptr : ans;
-}
-
-//面试题55：二叉树的深度
-int TreeDepth(TreeNode* pRoot)
-{
-	if (pRoot == nullptr)
-		return 0;
-	int left = TreeDepth(pRoot->left);
-	int right = TreeDepth(pRoot->right);
-	return left > right ? left + 1 : right + 1;
-}
-//平衡二叉树
-bool IsBalanced_SolutionCore(TreeNode* pRoot, int& depth) {
-	if (pRoot == nullptr) {
-		depth = 0;
-		return true;
-	}
-	int left = 0, right = 0;
-	if (IsBalanced_SolutionCore(pRoot->left, left) &&
-		IsBalanced_SolutionCore(pRoot->right, right)) {
-		int dif = left - right;
-		if (dif <= 1 && dif >= -1) {
-
-		}
-	}
-}
-bool IsBalanced_Solution(TreeNode* pRoot) {
-	int depth = 0;
-	return IsBalanced_SolutionCore(pRoot, depth);
-}
-
-//面试题56：数组中只出现一次的两个数字，其他数字都出现两次
-int FindFirst1(int mark) {
-	int index = 0;
-	while (mark != 0 && (mark & 1) == 0) {
-		index++;
-		mark = mark >> 1;
-	}
-	return index;
-}
-bool isIndex(int num, int index) {
-	num = num >> index;
-	return num & 1;
-}
-void FindNumsAppearOnce(vector<int> data, int* num1, int *num2) {
-	int len = data.size();
-	if (len < 2)
-		return;
-	int mark = data[0];
-	for (int i = 1; i < len; ++i)
-		mark ^= data[i];
-	unsigned int indexOfFirst1 = FindFirst1(mark);
-	*num1 = 0;
-	*num2 = 0;
-	for (int i = 0; i < len; ++i) {
-		if (isIndex(data[i], indexOfFirst1))
-			*num1 ^= data[i];
-		else
-			*num2 ^= data[i];
-	}
-}
-//数组中只出现一次的数字，其他数字都出现三次
-int FindNumAppearOnce(vector<int> nums) {
-	int len = nums.size();
-	int mark[32] = { 0 };
-	for (int i = 0; i < len; ++i) {
-		int bitMask = 1;
-		for (int j = 0; j < 32; ++j) {
-			if ((nums[i] & bitMask) != 0)
-				++mark[j];
-			bitMask = bitMask << 1;
-		}
-	}
-	int ans = 0;
-	for (int i = 31; i >= 0; --i) {
-		ans = ans << 1;
-		ans += (mark[i] % 3);
-	}
-	return ans;
-}
 //面试题57：和为s的数字
 //数组是递增排序的，若有多对数组和为s，输出乘积最小的一对
 vector<int> FindNumbersWithSum(vector<int> array, int sum) {
