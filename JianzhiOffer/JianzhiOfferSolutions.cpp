@@ -584,7 +584,50 @@ public:
 		return result;
 	}
 };
+//面试题58：翻转字符串
+void Reverse(string& str, int left, int right) {//翻转区间[left，right]内的字符
+	while (left < right) {
+		char temp = str[left];
+		str[left] = str[right];
+		str[right] = temp;
+		left++;
+		right--;
+	}
+}
+string ReverseSentence(string str) {
+	int len = str.size();
+	Reverse(str, 0, len - 1);
+	int left = 0, right = 0;
+	while (right<len) {
+		while (right<len&&str[right] != ' ')
+			right++;
+		Reverse(str, left, right - 1);
+		right++;
+		left = right;
+	}
+	return str;
+}
 
+//左旋转字符串
+string LeftRotateString(string str, int n) {
+	int len = str.size();
+	if (len == 0 || n <= 0 || n > len)
+		return str;
+	Reverse(str, 0, n - 1);
+	Reverse(str, n, len - 1);
+	Reverse(str, 0, len - 1);
+	return str;
+}
+//直接用库函数reverse
+string LeftRotateString(string str, int n) {
+	int len = str.size();
+	if (len <= 1 || n > len)
+		return str;
+	reverse(str.begin(), str.begin() + len);
+	reverse(str.begin(), str.begin() + len - n);
+	reverse(str.begin() + len - n, str.begin() + len);
+	return str;
+}
 
 /*-------------------------链表----------------------------*/
 
@@ -1433,6 +1476,58 @@ bool IsPopOrder(vector<int> pushV, vector<int> popV) {
 	}
 	return true;
 }
+//面试题59：队列的最大值
+vector<int> maxInWindows(const vector<int>& num, unsigned int size)
+{
+	int len = num.size();
+	deque<int> maxRecord;
+	vector<int> result;
+	if (size > len)
+		return result;
+	for (int i = 0; i < len; ++i) {
+		if ((!maxRecord.empty()) && (maxRecord.front() == i - size))
+			maxRecord.pop_front();
+		while ((!maxRecord.empty()) && (num[i] > num[maxRecord.back()]))
+			maxRecord.pop_back();
+		maxRecord.push_back(i);
+		if (i >= size - 1)
+			result.push_back(num[maxRecord.front()]);
+	}
+	return result;
+}
+//实现一个队列，max(),push_back(),pop_front()的时间复杂度都是O(1)
+template<typename T>
+class maxQueue{
+public:
+	maxQueue():currentIndex(0){}
+	void push_back(T n) {
+		while (!maxRecord.empty() && maxRecord.front().num < n)
+			maxRecord.pop_back();
+		InternalData temp = { currentIndex++, n };
+		maxRecord.push_back(temp);
+		data.push(temp);
+	}
+	void pop_front() {
+		if (!data.empty()) {
+			if (data.front().index == maxRecord.front().index)
+				maxRecord.pop_front();
+			data.pop();
+		}
+	}
+	T max() {
+		if (!maxRecord.empty())
+			return maxRecord.front().num;
+	}
+private:
+	struct InternalData {
+		int index;
+		T num;
+	};
+	queue<InternalData> data;
+	deque<InternalData> maxRecord;
+	int currentIndex;
+}
+
 
 /*-------------------------递归和循环----------------------------*/
 
@@ -1690,6 +1785,112 @@ int GetNumberSameAsIndex(const vector<int>& data) {
 	return -1;
 }
 
+//面试题57：和为s的数字
+//数组是递增排序的，若有多对数组和为s，输出乘积最小的一对
+vector<int> FindNumbersWithSum(vector<int> array, int sum) {
+	int len = array.size();
+	vector<int> res;
+	if (len < 2)
+		return res;
+	int left = 0, right = len - 1, multi = INT_MAX;
+	while (left < right) {
+		int temp1 = array[left] * array[right];
+		int temp2 = array[left] + array[right];
+		if (temp2 == sum && temp1 < multi) {
+			if (temp1 < multi) {
+				if (!res.empty()) {
+					res.pop_back();
+					res.pop_back();
+				}
+				res.push_back(array[left]);
+				res.push_back(array[right]);
+				multi = temp1;
+			}
+			left++;
+			right--;
+
+		}
+		else if (temp2 < sum) {
+			left++;
+		}
+		else {
+			right--;
+		}
+	}
+	return res;
+}
+//和为s的连续正数序列
+vector<vector<int> > FindContinuousSequence(int sum) {
+	int mid = (sum + 1) / 2, left = 1, right = 2, temp = 3;
+	vector<vector<int>> result;
+	while (left < mid) {
+		if (temp < sum) {
+			right++;
+			temp += right;
+		}
+		else if (temp > sum) {
+			temp -= left;
+			left++;
+		}
+		else {
+			vector<int> res;
+			for (int i = left; i <= right; ++i)
+				res.push_back(i);
+			result.push_back(res);
+			temp -= left;
+			left++;
+			right++;
+			temp += right;
+		}
+	}
+	return result;
+}
+
+//重构代码
+void pushAns(int left, int right, vector<vector<int>>& result) {
+	vector<int> ans;
+	for (int i = left; i <= right; ++i)
+		ans.push_back(i);
+	result.push_back(ans);
+}
+vector<vector<int> > FindContinuousSequence1(int sum) {
+	if (sum < 3)
+		return vector<vector<int>>();
+	int left = 1, right = 2, middle = (sum + 1) / 2, sumTemp = 3;
+	vector<vector<int>> result;
+	while (left < middle) {
+		if (sumTemp == sum)
+			pushAns(left, right, result);
+		while (sumTemp > sum&&left < middle) {
+			sumTemp -= left;
+			left++;
+			if (sumTemp == sum)
+				pushAns(left, right, result);
+		}
+		right++;
+		sumTemp += right;
+	}
+	return result;
+}
+
+//面试题61：扑克牌中的顺子
+bool IsContinuous(vector<int> numbers) {
+	int len = numbers.size();
+	if (len < 1)
+		return false;
+	sort(numbers.begin(), numbers.end(), less<int>());
+	int numOf0 = 0, mark = 0;
+	for (mark = 0; mark < len&&numbers[mark] == 0; ++mark)
+		numOf0++;
+	int numOfBreak = 0;
+	for (int i = mark + 1; i < len; ++i) {
+		if (numbers[i] == numbers[i - 1])
+			return false;
+		if (numbers[i] - numbers[i - 1] > 1)
+			numOfBreak += numbers[i] - numbers[i - 1] - 1;
+	}
+	return numOf0 >= numOfBreak ? true : false;
+}
 
 /*-------------------------回溯法----------------------------*/
 
@@ -2082,192 +2283,12 @@ int FirstNotRepeatingCharInStream(const string& str) {
 	return minIndex;
 }
 
-
-//面试题57：和为s的数字
-//数组是递增排序的，若有多对数组和为s，输出乘积最小的一对
-vector<int> FindNumbersWithSum(vector<int> array, int sum) {
-	int len = array.size();
-	vector<int> ans;
-	if (len < 2)
-		return ans;
-	int left = 0, right = len - 1, multiply = 0;
-	while (left < right) {
-		int temp = array[left] + array[right];
-		if (temp == sum) {
-			if (ans.size() != 0 && (array[left] * array[right]) < multiply) {
-				ans.pop_back();
-				ans.pop_back();
-				ans.push_back(array[left]);
-				ans.push_back(array[right]);
-			}
-			else if (ans.size() == 0)
-			{
-				ans.push_back(array[left]);
-				ans.push_back(array[right]);
-			}
-
-			left++;
-			right--;
-		}
-		else if (temp < sum)
-			left++;
-		else
-			right--;
-	}
-	return ans;
-}
-//和为s的连续正数序列
-vector<vector<int> > FindContinuousSequence(int sum) {
-	if (sum < 3)
-		return vector<vector<int>>();
-	int middle = (sum + 1) / 2;
-	int left = 1, right = 2, sumTemp = 3;
-	vector<vector<int>> result;
-	while (left < middle) {
-		if (sumTemp == sum) {
-			vector<int> ans;
-			for (int i = left; i <= right; ++i)
-				ans.push_back(i);
-			result.push_back(ans);
-			right++;
-			sumTemp += right;
-			sumTemp -= left;
-			left++;
-		}
-		else if (sumTemp < sum) {
-			right++;
-			sumTemp += right;
-		}
-		else {
-			sumTemp -= left;
-			left++;
-		}
-	}
-	return result;
-}
-
-//重构代码
-void pushAns(int left, int right, vector<vector<int>>& result) {
-	vector<int> ans;
-	for (int i = left; i <= right; ++i)
-		ans.push_back(i);
-	result.push_back(ans);
-}
-vector<vector<int> > FindContinuousSequence1(int sum) {
-	if (sum < 3)
-		return vector<vector<int>>();
-	int left = 1, right = 2, middle = (sum + 1) / 2, sumTemp = 3;
-	vector<vector<int>> result;
-	while (left < middle) {
-		if (sumTemp == sum)
-			pushAns(left, right, result);
-		while (sumTemp > sum&&left < middle) {
-			sumTemp -= left;
-			left++;
-			if (sumTemp == sum)
-				pushAns(left, right, result);
-		}
-		right++;
-		sumTemp += right;
-	}
-	return result;
-}
-//面试题58：翻转字符串
-void Reverse(string& str, int left, int right) {//翻转区间[left，right]内的字符
-	while (left < right) {
-		char temp = str[left];
-		str[left] = str[right];
-		str[right] = temp;
-		left++;
-		right--;
-	}
-}
-string ReverseSentence(string str) {
-	int len = str.size();
-	Reverse(str, 0, len - 1);
-	int left = 0, right = 0;
-	while (right<len) {
-		while (right<len&&str[right] != ' ')
-			right++;
-		Reverse(str, left, right - 1);
-		right++;
-		left = right;
-	}
-	return str;
-}
-//左旋转字符串
-string LeftRotateString(string str, int n) {
-	int len = str.size();
-	if (len == 0 || n <= 0 || n > len)
-		return str;
-	Reverse(str, 0, n - 1);
-	Reverse(str, n, len - 1);
-	Reverse(str, 0, len - 1);
-	return str;
-}
-
-//面试题59：队列的最大值
-vector<int> maxInWindows(const vector<int>& num, unsigned int size)
-{
-	vector<int> result;
-	int len = num.size();
-	if (size > len || len == 0)
-		return result;
-	deque<int> maxTemp;//存下标
-	maxTemp.push_back(0);
-	if (size == 1)
-		result.push_back(num[0]);
-	for (int i = 1; i < len; ++i) {
-		if (i - maxTemp.front() >= size)//清除滑出窗口的数字
-			maxTemp.pop_front();
-		if (maxTemp.empty())
-			maxTemp.push_back(i);
-		else {
-			int maxTempFront = num[maxTemp.front()];
-			if (num[i] > maxTempFront)
-			{
-				maxTemp.clear();
-				maxTemp.push_back(i);
-			}
-			else if (num[i] < maxTempFront) {
-				while (num[maxTemp.back()] < num[i])
-					maxTemp.pop_back();
-				maxTemp.push_back(i);
-			}
-		}
-		if (i >= size - 1)
-			result.push_back(num[maxTemp.front()]);
-	}
-	return result;
-}
-//重构代码
-vector<int> maxInWindows1(const vector<int>& num, unsigned int size) {
-	vector<int> result;
-	int len = num.size();
-	if (size > 0 && len >= size) {
-		deque<int> index;
-		for (int i = 0; i < size; ++i) {
-			while (!index.empty() && num[i] > num[index.back()])
-				index.pop_back();
-			index.push_back(i);
-		}
-		for (int i = size; i < len; ++i) {
-			result.push_back(num[index.front()]);
-			while (!index.empty() && num[i] > num[index.back()])
-				index.pop_back();
-			if (!index.empty() && (i - index.front() >= size))
-				index.pop_front();
-			index.push_back(i);
-		}
-		result.push_back(num[index.front()]);
-	}
-	return result;
-}
+/*--------------------------数学分析和建模------------------------------*/
 //面试题60：n个骰子的点数
 void printProbility(int number) {
 	if (number < 1)
 		return;
-	int maxValue = 6, len = maxValue*number + 1;
+	int maxValue = 6, len = maxValue*number + 1; // number个骰子的点数之和最大值为maxValue*number
 	int* probility[2];
 
 	probility[0] = new int[len];
@@ -2282,9 +2303,8 @@ void printProbility(int number) {
 	for (int i = 2; i <= number; ++i) {//加入第i个骰子
 		for (int j = 1; j <= i*maxValue; ++j) {
 			for (int jj = j; jj > 0 && j - jj < maxValue; --jj) {
-				probility[1 - flag][j] += probility[flag][jj];
+				probility[1 - flag][j] += probility[flag][jj]; // 点数和为j的骰子数之和上一轮循环中点数和为j-1,j-2,...,j-maxValue的骰子数之和
 			}
-
 		}
 		flag = 1 - flag;
 	}
@@ -2298,48 +2318,28 @@ void printProbility(int number) {
 	delete[] probility[1];
 }
 
-//面试题61：扑克牌中的顺子
-bool IsContinuous(vector<int> numbers) {
-	int len = numbers.size();
-	if (len < 1)
-		return false;
-	sort(numbers.begin(), numbers.end(), less<int>());
-	int numOf0 = 0, mark = 0;
-	for (mark = 0; mark < len&&numbers[mark] == 0; ++mark)
-		numOf0++;
-	int numOfBreak = 0;
-	for (int i = mark + 1; i < len; ++i) {
-		if (numbers[i] == numbers[i - 1])
-			return false;
-		if (numbers[i] - numbers[i - 1] > 1)
-			numOfBreak += numbers[i] - numbers[i - 1] - 1;
-	}
-	return numOf0 >= numOfBreak ? true : false;
-}
+
 
 //面试题62：圆圈中最后剩下的数字，0~n-1，每次删除第m个数字
 int LastRemaining_Solution(int n, int m)
 {
 	if (n <= 0 || m <= 0)
 		return -1;
-	list<int> num;
+	list<int> l;
 	for (int i = 0; i < n; ++i)
-		num.push_back(i);
-	auto itr = num.begin();
-	while (num.size() > 1) {
+		l.push_back(i);
+	auto itr = l.begin();
+	while (l.size() > 1) {
 		for (int j = 1; j < m; ++j) {
-			itr++;
-			if (itr == num.end())
-				itr = num.begin();
+			++itr;
+			if (itr == l.end())
+				itr = l.begin();
 		}
-		auto next = ++itr;
-		if (next == num.end())
-			next = num.begin();
-		--itr;
-		num.erase(itr);
-		itr = next;
+		itr = l.erase(itr); //erase返回删除的元素之后的元素的迭代器
+		if (itr == l.end())
+			itr = l.begin();
 	}
-	return *itr;
+	return *l.begin();
 }
 
 //面试题63：股票的最大利润
