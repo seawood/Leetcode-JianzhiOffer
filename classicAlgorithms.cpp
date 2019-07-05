@@ -261,25 +261,15 @@ ListNode *sortList(ListNode *head) {
 *稳定性:不稳定
 */
 void reconstructHeapTopDown(vector<int>& nums, int j, int right) {
-	while (true) {
-		int lChild = 2 * j + 1, rChild = 2 * j + 2;
-		if (lChild <= right&&rChild <= right&&nums[j] < nums[lChild] && nums[j] < nums[rChild]) {
-			if (nums[lChild] > nums[rChild]) {
-				swap(nums[j], nums[lChild]);
-				j = lChild;
-			}
-			else {
-				swap(nums[j], nums[rChild]);
-				j = rChild;
-			}
-		}
-		else if (lChild <= right&&nums[j] < nums[lChild]) {
-			swap(nums[j], nums[lChild]);
-			j = lChild;
-		}
-		else if (rChild <= right&&nums[j] < nums[rChild]) {
-			swap(nums[j], nums[rChild]);
-			j = rChild;
+	while (left <= right) {
+		int lChild = 2 * left + 1, rChild = 2 * left + 2, temp = left;
+		if (lChild <= right && nums[temp]<nums[lChild])
+			temp = lChild;
+		if (rChild <= right && nums[temp] < nums[rChild])
+			temp = rChild;
+		if (temp != left) {
+			swap(nums[left], nums[temp]);
+			left = temp;
 		}
 		else
 			break;
@@ -287,19 +277,16 @@ void reconstructHeapTopDown(vector<int>& nums, int j, int right) {
 }
 void sortColors_heapSort(vector<int>& nums) {
 	int len = nums.size();
-	//从下往上初始化最大堆
 	for (int i = len - 1; i >= 0; --i) {
 		int parent = (i - 1) / 2;
 		if (parent >= 0 && nums[i] > nums[parent]) {
 			swap(nums[i], nums[parent]);
-			reconstructHeapTopDown(nums, i, len - 1);
+			reconstruct(nums, i, len - 1);
 		}
 	}
-	int i = len - 1;
-	while (i > 0) {
-		swap(nums[0], nums[i]);//把堆首放到无序队列的最后
-		reconstructHeapTopDown(nums, 0, i - 1);//重构最大堆
-		--i;
+	for (int i = len - 1; i > 0; --i) {
+		swap(nums[i], nums[0]);
+		reconstruct(nums, 0, i - 1);
 	}
 }
 
