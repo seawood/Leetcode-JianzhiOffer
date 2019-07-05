@@ -354,6 +354,7 @@ vector<int> LevelTrversal(TreeNode* root) {
 }
 
 //3.1中序遍历,迭代版本1（Leetcode 94）
+//顺着最左侧通路，自底向上依次访问沿途各节点及右子树
 void goLeft(TreeNode* root, stack<TreeNode*>& s) {
 	while (root) {
 		s.push(root);
@@ -406,6 +407,7 @@ vector<int> inorderTraversal_recursive(TreeNode* root) {
 }
 
 //4.1后序遍历,迭代版本（Leetcode 145)
+//起点为最高左侧叶节点；访问当前节点，遍历以其右兄弟（若存在）为根的子树，向上回溯至其父节点（若存在）并转入下一片段
 void gotoHL(stack<TreeNode*>& s) {
 	while (TreeNode* x = s.top()) {
 		if (x->left) {
