@@ -629,6 +629,40 @@ string LeftRotateString(string str, int n) {
 	return str;
 }
 
+//面试题67：把字符串转换成整数
+//不符合要求的输入返回0且gMark被设置为-1,符合要求的输入返回数值且gMark被设置为0
+//边界条件：前导空字符，上下溢出，有无正负号，只有正负号，空字符串，非法字符
+int gMark = 0;
+int StrToInt(string str) {
+	int len = str.size();
+	bool positive = true;
+	int i = 0;
+	long result = 0;
+	while (i < len && str[i] == ' ')  //前导空字符：忽略
+		i++;
+	if (i < len && (str[i] == '+' || str[i] == '-'))
+		positive = str[i++] == '+' ? true : false;
+	if (i == len) { //空字符串，只有前导空字符，只有正负号
+		gMark = -1;
+		return 0;
+	}
+	for (i; i<len; ++i) {
+		if (str[i] >= '0'&&str[i] <= '9') {
+			result = result * 10 + str[i] - '0';
+		}
+		else {
+			gMark = -1;  //非法字符
+			return 0;
+		}
+	}
+	result = positive ? result : 0 - result;
+	if (result > INT_MAX || result < INT_MIN) {  //上下溢出
+		gMark = -1;
+		return 0;
+	}
+	return result;
+}
+
 /*-------------------------链表----------------------------*/
 
 struct ListNode {
@@ -966,6 +1000,27 @@ ListNode* FindFirstCommonNode(ListNode* pHead1, ListNode* pHead2) {
 	return walk1;
 }
 
+//面试题62：圆圈中最后剩下的数字，0~n-1，每次删除第m个数字
+int LastRemaining_Solution(int n, int m)
+{
+	if (n <= 0 || m <= 0)
+		return -1;
+	list<int> l;
+	for (int i = 0; i < n; ++i)
+		l.push_back(i);
+	auto itr = l.begin();
+	while (l.size() > 1) {
+		for (int j = 1; j < m; ++j) {
+			++itr;
+			if (itr == l.end())
+				itr = l.begin();
+		}
+		itr = l.erase(itr); //erase返回删除的元素之后的元素的迭代器
+		if (itr == l.end())
+			itr = l.begin();
+	}
+	return *l.begin();
+}
 /*-------------------------二叉树----------------------------*/
 
 //面试题7：重建二叉树
@@ -1398,6 +1453,65 @@ private:
 			}
 		}
 		return false;
+	}
+};
+
+//面试题68：二叉树中两个节点的最低公共祖先
+//情况1：是二叉搜索树
+//情况2：每个节点有指向父节点的指针
+//情况3：不是二叉搜索树，没有指向父节点的指针
+class Solution_Leetcode236 {
+private:
+	//多叉树
+	bool getNodePath1(TreeNode* pRoot, TreeNode* pNode, list<TreeNode*>& path) {
+		path.push_back(pRoot);
+		if (pRoot == pNode)
+			return true;
+		bool found = false;
+		auto itr = pRoot->children.begin();
+		while (!found && itr != pRoot->children.end()) {
+			found = getNodePath1(*itr, pNode, path);
+			itr++;
+		}
+		if (!found)
+			path.pop_back();
+		return found;
+	}
+	//二叉树
+	bool getNodePath2(TreeNode* pRoot, TreeNode* pNode, list<TreeNode*>& path) {
+		path.push_back(pRoot);
+		if (pRoot == pNode)
+			return true;
+		bool found = false;
+		if (pRoot->left)
+			found = getNodePath2(pRoot->left, pNode, path);
+		if (!found && pRoot->right)
+			found = getNodePath2(pRoot->right, pNode, path);
+		if (!found)
+			path.pop_back();
+		return found;
+	}
+	TreeNode* getLowestCommonAncestor(const list<TreeNode*>& route1, const list<TreeNode*>& route2) {
+		auto itr1 = route1.begin(), itr2 = route2.begin();
+		TreeNode* result = nullptr;
+		while (itr1 != route1.end() && itr2 != route2.end() && (*itr1 == *itr2)) {
+			result = *itr1;
+			itr1++;
+			itr2++;
+		}
+		return result;
+	}
+public:
+	TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+		TreeNode* result = nullptr;
+		if (root != nullptr && p != nullptr&&q != nullptr) {
+			list<TreeNode*> pathP;
+			getNodePath2(root, p, pathP);
+			list<TreeNode*> pathQ;
+			getNodePath2(root, q, pathQ);
+			result = getLowestCommonAncestor(pathP, pathQ);
+		}
+		return result;
 	}
 };
 /*-------------------------栈和队列----------------------------*/
@@ -2131,6 +2245,22 @@ int longestSubstringWithoutDuplicate2(const string& s) { // 只需要保存前面一个记
 	}
 	return longest;
 }
+//面试题63：股票的最大利润
+int MaxDiff(const vector<int>& prices) {
+	int len = prices.size();
+	if (len < 2)
+		return 0;
+	int minPrice = prices[0];
+	int diff = prices[1] - prices[0];
+	for (int i = 2; i < len; ++i) {
+		if (prices[i - 1] < minPrice)
+			minPrice = prices[i - 1];
+		int currentDiff = prices[i] - minPrice;
+		if (currentDiff > diff)
+			diff = currentDiff;
+	}
+	return diff;
+}
 /*-------------------------位运算----------------------------*/
 
 //面试题15：二进制中1的个数
@@ -2180,6 +2310,18 @@ int FindNumAppearOnce(vector<int> nums) {
 		ans += (mark[i] % 3);
 	}
 	return ans;
+}
+//面试题65：不用加减乘除做加法
+int Add(int num1, int num2)
+{
+	int sum, carry;
+	do {
+		sum = num1^num2;
+		carry = (num1&num2) << 1;
+		num1 = sum;
+		num2 = carry;
+	} while (carry != 0);
+	return sum;
 }
 /*-------------------------代码的完整性----------------------------*/
 
@@ -2318,48 +2460,30 @@ void printProbility(int number) {
 	delete[] probility[1];
 }
 
-
-
-//面试题62：圆圈中最后剩下的数字，0~n-1，每次删除第m个数字
-int LastRemaining_Solution(int n, int m)
-{
-	if (n <= 0 || m <= 0)
-		return -1;
-	list<int> l;
-	for (int i = 0; i < n; ++i)
-		l.push_back(i);
-	auto itr = l.begin();
-	while (l.size() > 1) {
-		for (int j = 1; j < m; ++j) {
-			++itr;
-			if (itr == l.end())
-				itr = l.begin();
+//面试题66：构建乘积数组
+vector<int> multiply(const vector<int>& A) {
+	int len = A.size();
+	vector<int> result;
+	if (len > 0) {
+		int temp = 1;
+		for (int i = 0; i < len; ++i) {
+			result.push_back(temp);
+			temp *= A[i];
 		}
-		itr = l.erase(itr); //erase返回删除的元素之后的元素的迭代器
-		if (itr == l.end())
-			itr = l.begin();
+		temp = 1;
+		for (int i = len - 1; i >= 0; --i) {
+			result[i] *= temp;
+			temp *= A[i];
+		}
 	}
-	return *l.begin();
+	return result;
 }
 
-//面试题63：股票的最大利润
-int MaxDiff(const vector<int>& prices) {
-	int len = prices.size();
-	if (len < 2)
-		return 0;
-	int minPrice = prices[0];
-	int diff = prices[1] - prices[0];
-	for (int i = 2; i < len; ++i) {
-		if (prices[i - 1] < minPrice)
-			minPrice = prices[i - 1];
-		int currentDiff = prices[i] - minPrice;
-		if (currentDiff > diff)
-			diff = currentDiff;
-	}
-	return diff;
-}
+
+/*--------------------创新解法-------------------------------------*/
 
 //面试题64：求1+2+...+n，要求不能用乘除法，不能用for、while、if、else、switch、case等关键字及条件判断语句
+//解法1：利用类的静态成员和类的构造函数
 class Temp {
 public:
 	Temp() { ++num; sum += num; }
@@ -2378,122 +2502,47 @@ int Sum_Solution(int n) {
 	delete[] tempInstance;
 	return Temp::getSum();
 }
-
-//面试题65：不用加减乘除做加法
-int Add(int num1, int num2)
-{
-	int sum, carry;
-	do {
-		sum = num1^num2;
-		carry = (num1&num2) << 1;
-		num1 = sum;
-		num2 = carry;
-	} while (carry != 0);
-	return sum;
-}
-
-//面试题66：构建乘积数组
-vector<int> multiply(const vector<int>& A) {
-	int len = A.size();
-	vector<int> result;
-	if (len > 0) {
-		result.push_back(1);
-		for (int i = 0; i<len - 1; ++i)
-			result.push_back(result.back()*A[i]);
-		int temp = 1;
-		for (int i = len - 1; i >= 0; --i) {
-			result[i] *= temp;
-			temp *= A[i];
-		}
-	}
-	return result;
-}
-
-//面试题67：把字符串转换成整数
-//不符合要求的输入返回0且gMark被设置为-1,符合要求的输入返回数值且gMark被设置为0
-int gMark = 0;
-int StrToInt(string str) {
-	int len = str.size();
-	long num = 0;//就模拟atoi的行为而言，atoi返回int,考虑int溢出的情况
-	if (len > 0) {
-		bool positive = true;
-		int walk = 0;
-		if (str[walk] == '-') {
-			positive = false;
-			++walk;
-		}
-		else if (str[walk] == '+') {
-			walk++;
-		}
-		if (walk == len)
-			gMark = -1;
-		else {
-			int flag = positive ? 1 : -1;
-			for (int i = walk; i < len; ++i) {
-				if (!(str[i] > '0'&&str[i] < '9')
-					|| (positive&&num>0x7fffffff) || (!positive&&num<(signed int)0x80000000)) {//溢出
-					gMark = -1;
-					num = 0;
-					break;
-				}
-				num = num * 10 + flag*(str[i] - '0');
-			}
-		}
-	}
-	return num;
-}
-
-//面试题68：二叉树中两个节点的最低公共祖先
-//不是二叉搜索树，没有指向父节点的指针
-class Solution_Leetcode236 {
-private:
-	bool walkAlongLeft(TreeNode* root, TreeNode* node, stack<TreeNode*>& s, vector<TreeNode*>& route) {
-		bool find = false;
-		while (root) {
-			s.push(root);
-			route.push_back(root);
-			if (root == node) {
-				find = true;
-				break;
-			}
-			root = root->left;
-		}
-		return find;
-	}
-	//如果是多叉树，用递归找路径（TODO）
-	vector<TreeNode*> getRoute(TreeNode* root, TreeNode* node) {
-		stack<TreeNode*> s;
-		vector<TreeNode*> route;
-		while (true) {
-			bool mark = walkAlongLeft(root, node, s, route);
-			if (mark || s.empty())
-				break;
-			root = s.top()->right;
-			s.pop();
-			if (root == nullptr)
-				while (route.back() != s.top())
-					route.pop_back();
-		}
-		return route;
-	}
-	TreeNode* getLowestCommonAncestor(const vector<TreeNode*>& route1, const vector<TreeNode*>& route2) {
-		auto itr1 = route1.begin(), itr2 = route2.begin();
-		TreeNode* result = nullptr;
-		while (itr1 != route1.end() && itr2 != route2.end() && (*itr1 == *itr2)) {
-			result = *itr1;
-			itr1++;
-			itr2++;
-		}
-		return result;
-	}
+//解法2:利用虚函数
+class A {
 public:
-	TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
-		TreeNode* result = nullptr;
-		if (root != nullptr && p != nullptr&&q != nullptr) {
-			vector<TreeNode*> routeP = getRoute(root, p);
-			vector<TreeNode*> routeQ = getRoute(root, q);
-			result = getLowestCommonAncestor(routeP, routeQ);
-		}
-		return result;
+	virtual int sum(int n) { return 0; }
+};
+A* Array[2];
+class B :public A {
+public:
+	virtual int sum(int n) {
+		return Array[!!n]->sum(n - 1) + n;
 	}
 };
+int Sum_Solution(int n) {
+	A a;
+	B b;
+	Array[0] = &a;
+	Array[1] = &b;
+	return Array[1]->sum(n);
+}
+//解法3：用函数指针
+typedef int(*fun)(int);
+int funTerminate(int n) {
+	return 0;
+}
+int funSum(int n) {
+	static fun f[2] = { funTerminate, funSum };
+	return f[!!n](n - 1) + n;
+}
+//解法4：利用模板在编译期计算
+template<int n> struct sum {
+	enum value { N = sum<n - 1>::N + n };
+};
+template<>struct sum<1> {
+	enum value { N = 1 };
+};
+int main() {
+	auto i = sum<4>::N; //缺点是不能动态的输入n,这里n=4
+	cout << i << endl;
+	system("PAUSE");
+	return 0;
+}
+
+
+
