@@ -112,18 +112,20 @@ void sortColors_InsertSort(vector<int>& nums) {
 }
 /*
 *4.快速排序
-*算法：选择一个元素作为基准值，经过一趟排序之后，基准值位于排好序的位置，基准值左边的元素都小于基准值，基准值右边的元素都大于基准值,递归对左右两边的序列进行快速排序
-      一趟排序：记录指针l处的元素值为mark;指针l和r分别指向最左边和最右边的元素，指针r从右往左找第一个小于等于基准值的元素，将r处的元素值赋给l处元素，指针l从左往右找第一个大于基准值的元素，将l处的元素值赋给r处的元素
-	           重复上述过程，直到l和r指针相遇，指针相遇处赋值为mark
+*算法：选择一个元素作为基准值，经过一趟排序之后，基准值位于排好序的位置，
+	  基准值左边的元素都小于基准值，基准值右边的元素都大于基准值,递归对左右两边的序列进行快速排序
+      一趟排序：记录指针l处的元素值为mark;指针l和r分别指向最左边和最右边的元素，
+	  指针r从右往左找第一个小于等于基准值的元素，将r处的元素值赋给l处元素，
+	  指针l从左往右找第一个大于基准值的元素，将l处的元素值赋给r处的元素，
+	  重复上述过程，直到l和r指针相遇，指针相遇处赋值为mark
 *时间：最差时间复杂度O(n^2),最优时间复杂度O(nlogn),平均时间复杂度O(nlogn)
-*空间：所需辅助空间O(logn)
+*空间：所需辅助空间平均O(logn)，最坏O(n)。对于就地快速排序，主要是递归的空间消耗
 *稳定性：不稳定
 */
 void sortColors_QuickSortCore(vector<int>& nums, int left, int right) {
-	if (right - left <= 0)
+	if (right - left <= 0)  //注意
 		return;
-	int mark = nums[left];
-	int l = left, r = right;
+	int mark = nums[left], l = left, r = right;
 	while (r > l) {
 		while (nums[r] > mark&&r >l)
 			r--;
@@ -197,7 +199,7 @@ void mergeIterative(vector<int>& nums, const int& left, const int& mid, const in
 }
 void sortColors_mergeSortIterative(vector<int>& nums) {
 	int len = nums.size();
-	for (int size = 1; size < len; size << 1) {
+	for (int size = 1; size < len; size = size << 1) {
 		for (int left = 0; left < len; left += 2 * size) {
 			int mid = min(left + size, len);
 			int right = min(left + 2 * size, len);
@@ -260,12 +262,12 @@ ListNode *sortList(ListNode *head) {
 *空间：O(1)
 *稳定性:不稳定
 */
-void reconstructHeapTopDown(vector<int>& nums, int j, int right) {
-	while (left <= right) {
+void reconstruct(vector<int>& nums, int left, int right) { //由于nums[left]的调整，从上到下调整[left,right]为大根堆
+	while (left < right) {
 		int lChild = 2 * left + 1, rChild = 2 * left + 2, temp = left;
-		if (lChild <= right && nums[temp]<nums[lChild])
+		if (lChild <= right && nums[lChild] > nums[temp])
 			temp = lChild;
-		if (rChild <= right && nums[temp] < nums[rChild])
+		if (rChild <= right && nums[rChild]>nums[temp])
 			temp = rChild;
 		if (temp != left) {
 			swap(nums[left], nums[temp]);
@@ -275,20 +277,20 @@ void reconstructHeapTopDown(vector<int>& nums, int j, int right) {
 			break;
 	}
 }
-void sortColors_heapSort(vector<int>& nums) {
-	int len = nums.size();
-	for (int i = len - 1; i >= 0; --i) {
-		int parent = (i - 1) / 2;
-		if (parent >= 0 && nums[i] > nums[parent]) {
-			swap(nums[i], nums[parent]);
-			reconstruct(nums, i, len - 1);
+	void sortColors(vector<int>& nums) {
+		int len = nums.size();
+		for (int i = len - 1; i >= 0; --i) {  //初始化大根堆
+			int parent = (i - 1) / 2;
+			if (parent >= 0 && nums[i]>nums[parent]) {
+				swap(nums[i], nums[parent]);
+				reconstruct(nums, i, len - 1);
+			}
+		}
+		for (int i = len - 1; i >= 1; --i) {  //依次把数根与无序序列的最后一个元素交换
+			swap(nums[i], nums[0]);
+			reconstruct(nums, 0, i - 1);
 		}
 	}
-	for (int i = len - 1; i > 0; --i) {
-		swap(nums[i], nums[0]);
-		reconstruct(nums, 0, i - 1);
-	}
-}
 
 struct TreeNode {
 	int val;
