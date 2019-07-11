@@ -675,9 +675,7 @@ struct ListNode {
 void AddToTail(ListNode** pHead, int value) {
 	if (pHead == nullptr)
 		return;
-	ListNode* pNew = new ListNode();
-	pNew->val = value;
-	pNew->next = nullptr;
+	ListNode* pNew = new ListNode(value);
 	if (*pHead == nullptr)
 		*pHead = pNew;
 	else {
@@ -742,7 +740,7 @@ vector<int> printListFromTailToHead2(ListNode* head) {
 }
 
 //面试题18：删除链表中的节点
-//O(1)时间：把要删除节点的下一个节点的值复制到要删除节点，再删除下一个节点
+//在O(1)时间内删除链表节点：把要删除节点的下一个节点的值复制到要删除节点，再删除下一个节点
 //特殊情况：删除尾节点还是要从头开始遍历；要删除头节点，且链表中只有一个节点，注意要将头结点设为nullptr
 //因为有O（1)时间复杂度的限制，所以只能假设要删除的节点确实在链表中
 void DeleteNode(ListNode** pListHead, ListNode* pToBeDeleted) {
@@ -853,20 +851,18 @@ ListNode* EntryNodeOfLoop(ListNode* pHead) {
 ListNode* ReverseList(ListNode* pHead) {
 	if (pHead == nullptr)
 		return nullptr;
-	ListNode* pCurrent = pHead;
-	ListNode* pPre = nullptr;
-	ListNode* newHead = nullptr;
-	while (pCurrent != nullptr) {
-		ListNode* pNext = pCurrent->next;
-		if (pNext == nullptr)
-			newHead = pCurrent;
-		pCurrent->next = pPre;
-		pPre = pCurrent;
-		pCurrent = pNext;
+	ListNode* preHead = new ListNode(0);
+	preHead->next = pHead;
+	while (pHead->next != nullptr) {
+		ListNode* reverseNode = pHead->next;
+		pHead->next = reverseNode->next;
+		reverseNode->next = preHead->next;
+		preHead->next = reverseNode;
 	}
-	return newHead;
+	ListNode* walk = preHead->next;
+	delete preHead;
+	return walk;
 }
-
 //面试题25：合并两个排序的链表
 ListNode* Merge(ListNode* pHead1, ListNode* pHead2) {
 	if (pHead1 == nullptr)
@@ -1023,7 +1019,7 @@ int LastRemaining_Solution(int n, int m)
 }
 /*-------------------------二叉树----------------------------*/
 
-//面试题7：重建二叉树
+//面试题7：根据前序遍历和中序遍历序列重建二叉树
 //前序遍历，中序遍历：根节点在前序遍历的首位，找出根节点在中序遍历中所在的位置
 TreeNode* reConstructBinaryTreeCore(vector<int>::iterator pre_begin, vector<int>::iterator pre_end,
 	vector<int>::iterator in_begin, vector<int>::iterator in_end) {  // 左闭右开区间
@@ -1049,6 +1045,7 @@ TreeNode* reConstructBinaryTree(vector<int> pre, vector<int> in) {
 }
 
 //面试题8：二叉树的下一个节点(中序遍历）
+//树中的节点包含指向父节点的指针
 //case1:如果该节点有右子树,它的下一个节点就是右子树中最左子节点
 //case2.1：如果该节点没有右子树而且它是父节点的左子节点，则它的下一个节点就是它的父节点
 //case2.2: 如果该节点没有右子树而且它是父节点的右子节点，则沿着它的指向父节点的指针遍历，直到找到一个是他父节点的左子节点的节点，如果这样的节点存在，则它的父节点就是我们要找的节点
@@ -1141,7 +1138,7 @@ bool Equal(double num1, double num2) {
 //循环解法
 void alongLeft(stack<TreeNode*> &s, TreeNode* root) {
 	while (root) {
-		if (root->left || root->right)
+		if (root->left || root->right)  //先swap
 			swap(root->left, root->right);
 		if (root->right != nullptr)
 			s.push(root->right);
@@ -1158,19 +1155,14 @@ void Mirror(TreeNode *pRoot) {
 		s.pop();
 	}
 }
+
 //递归解法
 void Mirror(TreeNode *pRoot) {
-	if (pRoot == nullptr)
+	if (pRoot == nullptr || (pRoot->left == nullptr && pRoot->right == nullptr))
 		return;
-	if (pRoot->left == nullptr && pRoot->right == nullptr)
-		return;
-	TreeNode* tmp = pRoot->left;
-	pRoot->left = pRoot->right;
-	pRoot->right = tmp;
-	if (pRoot->left != nullptr)
-		Mirror(pRoot->left);
-	if (pRoot->right != nullptr)
-		Mirror(pRoot->right);
+	swap(pRoot->left, pRoot->right);
+	Mirror(pRoot->left);
+	Mirror(pRoot->right);
 }
 
 //面试题28：对称的二叉树
@@ -1210,34 +1202,24 @@ vector<int> PrintFromTopToBottom(TreeNode* root) {
 //把二叉树打印成多行
 //用两个额外的变量：当前层还没有打印的节点数，下一层节点数
 vector<vector<int> > Print(TreeNode* pRoot) {
-	vector < vector<int >> result;
-	if (pRoot == nullptr)
-		return result;
-	int toBePrinted = 1, nextRowNum = 0;
+	vector<vector<int>> result;
 	queue<TreeNode*> q;
-	q.push(pRoot);
-	while (true) {
-		vector<int> row;
-		while (toBePrinted) {
-			row.push_back(q.front()->val);
-			if (q.front()->left) {
-				nextRowNum++;
-				q.push(q.front()->left);
-			}
-			if (q.front()->right) {
-				nextRowNum++;
-				q.push(q.front()->right);
-			}
+	if (pRoot)
+		q.push(pRoot);
+	while (!q.empty()) {
+		int len = q.size();
+		vector<int> re;
+		while (len > 0) {
+			len--;
+			auto temp = q.front();
+			re.push_back(temp->val);
+			if (temp->left)
+				q.push(temp->left);
+			if (temp->right)
+				q.push(temp->right);
 			q.pop();
-			toBePrinted--;
 		}
-		result.push_back(row);
-		if (nextRowNum) {
-			toBePrinted = nextRowNum;
-			nextRowNum = 0;
-		}
-		else
-			break;
+		result.push_back(re);
 	}
 	return result;
 }
@@ -1281,24 +1263,25 @@ vector<vector<int> > Print1(TreeNode* pRoot) {
 }
 
 //面试题33：二叉搜索树的后续遍历序列
-bool VerifySquenceOfBSTCore(const vector<int>& sequence, const int& l, const int& r) {
-	if (l >= r) //对于叶子节点l>r，对于空子树，l=r
+bool verify(const vector<int>& sequence, int left, int right) {
+	if (right <= left)
 		return true;
-	int root = sequence[r];
-	int i = r;
-	while (i > l && sequence[i - 1] > root)
+	int i = right - 1;
+	while (i >= left && sequence[i] >= sequence[right])
 		--i;
-	for (int j = i - 1; j >= l; --j)
-		if (sequence[j] > root)
+	for (int j = i; j >= left; --j) {
+		if (sequence[j] > sequence[right])
 			return false;
-	return VerifySquenceOfBSTCore(sequence, l, i - 1) && VerifySquenceOfBSTCore(sequence, i, r - 1);
+	}
+	return verify(sequence, left, i) && verify(sequence, i + 1, right - 1);
 }
-bool VerifySquenceOfBST(const vector<int>& sequence) {
+bool VerifySquenceOfBST(vector<int> sequence) {
 	int len = sequence.size();
 	if (len == 0)
 		return false;
-	return VerifySquenceOfBSTCore(sequence, 0, len - 1);
+	return verify(sequence, 0, len - 1);
 }
+	
 
 //面试题34：二叉树中和为某一值的路径
 void FindPathCore(TreeNode* root,
