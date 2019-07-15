@@ -879,6 +879,37 @@ ListNode* Merge(ListNode* pHead1, ListNode* pHead2) {
 	}
 	return newHead;
 }
+ListNode* Merge(ListNode* pHead1, ListNode* pHead2)
+{
+	if (pHead1 == nullptr)
+		return pHead2;
+	if (pHead2 == nullptr)
+		return pHead1;
+	ListNode* newHead, *masterWalk, *branchWalk;
+	if (pHead1->val <= pHead2->val) {
+		newHead = pHead1;
+		masterWalk = pHead1;
+		branchWalk = pHead2;
+	}
+	else {
+		newHead = pHead2;
+		masterWalk = pHead2;
+		branchWalk = pHead1;
+	}
+	while (masterWalk->next != nullptr && branchWalk != nullptr) {
+		if (masterWalk->next->val > branchWalk->val) {
+			ListNode* temp = branchWalk->next;
+			branchWalk->next = masterWalk->next;
+			masterWalk->next = branchWalk;
+			branchWalk = temp;
+		}
+		masterWalk = masterWalk->next;
+	}
+	if (branchWalk != nullptr) {
+		masterWalk->next = branchWalk;
+	}
+	return newHead;
+}
 
 //面试题35：复杂链表的复制
 //复制主链，把复制节点放在原节点的后面
