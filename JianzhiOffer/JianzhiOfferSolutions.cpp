@@ -983,10 +983,10 @@ TreeNode* Convert(TreeNode* pRootOfTree) {
 		return nullptr;
 	TreeNode* pLastNodeInList = nullptr;
 	ConvertCore(pRootOfTree, &pLastNodeInList);
-	TreeNode* pHeadOfList = pLastNodeInList;
-	while (pHeadOfList != nullptr && pHeadOfList->left != nullptr)
-		pHeadOfList = pHeadOfList->left;
-	return pHeadOfList;
+	
+	while (pLastNodeInList->left != nullptr)
+		pLastNodeInList = pLastNodeInList->left;
+	return pLastNodeInList;
 }
 
 //面试题52：两个链表的第一个公共节点
@@ -1315,33 +1315,32 @@ bool VerifySquenceOfBST(vector<int> sequence) {
 	
 
 //面试题34：二叉树中和为某一值的路径
-void FindPathCore(TreeNode* root,
-	const int& expectNumber,
-	int currentSum,
-	vector<int> re,  //如果这里参数定义成vector<int> & re，则最后要加上re.pop_back()
-	vector<vector<int>>& result) {
+void findPathCore(TreeNode* root, int& curSum, const int& expectNumber,
+	vector<int>& re, vector<vector<int>>& result) {
+	curSum += root->val;
 	re.push_back(root->val);
-	currentSum += root->val;
-	if (root->left == nullptr&&root->right == nullptr&&expectNumber == currentSum) {
+	if (root->left == nullptr && root->right == nullptr && curSum == expectNumber) {
 		result.push_back(re);
 	}
 	else {
 		if (root->left != nullptr)
-			FindPathCore(root->left, expectNumber, currentSum, re, result);
+			findPathCore(root->left, curSum, expectNumber, re, result);
 		if (root->right != nullptr)
-			FindPathCore(root->right, expectNumber, currentSum, re, result);
+			findPathCore(root->right, curSum, expectNumber, re, result);
 	}
-	//re.pop_back();
+	curSum -= root->val;
+	re.pop_back();
 }
 vector<vector<int> > FindPath(TreeNode* root, int expectNumber) {
 	vector<vector<int>> result;
 	if (root == nullptr)
 		return result;
 	vector<int> re;
-	int currentSum = 0;
-	FindPathCore(root, expectNumber, currentSum, re, result);
+	int curSum = 0;
+	findPathCore(root, curSum, expectNumber, re, result);
 	return result;
 }
+	
 
 //面试题37：序列化二叉树
 void SerializeCore(TreeNode* root, string& s) {
