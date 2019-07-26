@@ -451,6 +451,22 @@ void Print1ToMaxOfNDigits2(int n) {
 	}
 	delete[] num;
 }
+//两个表示数字的字符串相加
+string addStrings(string num1, string num2) {
+	int len1 = num1.size(), len2 = num2.size();
+	string result = "";
+	int i = len1 - 1, j = len2 - 1, flag = 0;
+	while (i >= 0 || j >= 0 || flag >0) {
+		int temp = flag;
+		if (i >= 0)
+			temp += num1[i--] - '0';
+		if (j >= 0)
+			temp += num2[j--] - '0';
+		flag = temp / 10;
+		result = char('0' + temp % 10) + result;
+	}
+	return result;
+}
 
 //面试题19：正则表达式匹配
 bool matchCore(char* str, char* pattern) {
