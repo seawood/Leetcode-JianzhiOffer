@@ -475,23 +475,17 @@ bool matchCore(char* str, char* pattern) {
 	if (*str != '\0' && *pattern == '\0')
 		return false;
 	if (*(pattern + 1) == '*') {
-		if (*str == *pattern || (*pattern == '.' && *str != '\0')) {
-			return matchCore(str + 1, pattern) ||
-				matchCore(str, pattern + 2) ||
-				matchCore(str + 1, pattern + 2);
-		}
-		else {
+		if (*str != '\0' && (*str == *pattern || *pattern == '.'))
+			return matchCore(str + 1, pattern) || matchCore(str + 1, pattern + 2) || matchCore(str, pattern + 2);
+		else
 			return matchCore(str, pattern + 2);
-		}
 	}
 	else if (*str == *pattern || (*pattern == '.' && *str != '\0'))
 		return matchCore(str + 1, pattern + 1);
 	else
 		return false;
 }
-bool match(char* str, char* pattern) {
-	if (str == nullptr || pattern == nullptr)
-		return false;
+bool match(char* str, char* pattern){
 	return matchCore(str, pattern);
 }
 
@@ -524,6 +518,7 @@ bool isNumeric(const char* string) {
 }
 
 //面试题38：字符串的排列
+//方法1
 void PermutationCore(const string str, int i, vector<string>& result) {
 	if (i == str.size() - 1)
 		return;
@@ -551,6 +546,32 @@ vector<string> Permutation(string str) {
 	PermutationCore(str, i, result);
 	return result;
 }
+//方法2：DFS
+void PermutationCore(string str, int left, const int& len, vector<string>& res) {
+	if (left == len) {
+		res.push_back(str);
+		return;
+	}
+	set<char> check;
+	for (int i = left; i < len; ++i) {
+		auto temp = check.insert(str[i]);
+		if (temp.second == true) {
+			swap(str[left], str[i]);
+			PermutationCore(str, left + 1, len, res);
+			swap(str[left], str[i]);
+		}
+	}
+}
+vector<string> Permutation(string str) {
+	int len = str.size();
+	vector<string> res;
+	if (len == 0)
+		return res;
+	PermutationCore(str, 0, len, res);
+	sort(res.begin(), res.end());
+	return res;
+}
+	
 
 //面试题43：1~n整数中1出现的次数
 int NumberOf1Between1AndN(const char* num) {
@@ -658,7 +679,7 @@ int StrToInt(string str) {
 		i++;
 	if (i < len && (str[i] == '+' || str[i] == '-'))
 		positive = str[i++] == '+' ? true : false;
-	if (i == len) { //空字符串，只有前导空字符，只有正负号
+	if (i == len) { //!空字符串，只有前导空字符，只有正负号
 		gMark = -1;
 		return 0;
 	}
@@ -2154,6 +2175,7 @@ int maxProductAfterCutting1(int length) {
 }
 
 //面试题46：把数字翻译成字符串
+//0->a,...,25->z
 int TransNum(const vector<int>& num) {
 	int len = num.size();
 	if (len <= 1)
@@ -2172,6 +2194,40 @@ int TransNum(const vector<int>& num) {
 	}
 	return re[0];
 }
+//1->A,..,26->Z
+//只需要记录前两个值
+class Solution {
+	bool isValid(char a) {
+		return a>'0' && a <= '9';
+	}
+	bool isValid(char a, char b) {
+		return (a == '1' || (a == '2' && b <= '6'));
+	}
+public:
+	int numDecodings(string s) {
+		int len = s.size();
+		if (len == 0 || s[0] == '0')
+			return 0;
+		if (len == 1)
+			return 1;
+		int pre1 = 1, pre2 = 1, res;
+		for (int i = 1; i < len; ++i) {
+			bool check1 = isValid(s[i]), check2 = isValid(s[i - 1], s[i]);
+			if (check1 && check2)
+				res = pre1 + pre2;
+			else if (check1 && !check2)
+				res = pre1;
+			else if (!check1 && check2)
+				res = pre2;
+			else
+				res = 0;
+			pre2 = pre1;
+			pre1 = res;
+
+		}
+		return res;
+	}
+};
 
 //面试题47：礼物的最大价值
 int MaxPresentsValue1(const vector<vector<int>>& present) {
@@ -2273,6 +2329,26 @@ int longestSubstringWithoutDuplicate2(const string& s) { // 只需要保存前面一个记
 		preLongest = longest;
 	}
 	return longest;
+}
+int lengthOfLongestSubstring3(string s) {
+	int len = s.size();
+	if (len == 0)
+		return 0;
+	int maxLen = 1, res = 1;
+	int mark[128];
+	for (int i = 0; i < 128; ++i)
+		mark[i] = -1;
+	mark[s[0]] = 0;
+	for (int i = 1; i < len; ++i) {
+		int temp = mark[s[i]];
+		if (temp == -1 || i - temp > maxLen)
+			maxLen++;
+		else if (i - temp < maxLen)
+			maxLen = i - temp;
+		mark[s[i]] = i;
+		res = max(res, maxLen);
+	}
+	return res;
 }
 //面试题63：股票的最大利润
 int MaxDiff(const vector<int>& prices) {
