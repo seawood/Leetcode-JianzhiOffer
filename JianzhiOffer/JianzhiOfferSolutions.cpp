@@ -20,7 +20,7 @@ Date:2019.2.20
 #include <list>
 using namespace std;
 
-/*-------------------------数组----------------------------*/
+/*-------------------------分类1：数组----------------------------*/
 
 //面试题3：数组中的重复数字
 //修改原数组，时间复杂度O(n),空间复杂度O(1)
@@ -38,6 +38,23 @@ bool duplicate1(vector<int> numbers, int* duplication) {
 				numbers[i] = b;
 			}
 		}
+	}
+	return false;
+}
+bool duplicate(int numbers[], int length, int* duplication) {
+	int i = 0;
+	while (i < length) {
+		int temp = numbers[i];
+		if (temp != i) {
+			if (numbers[temp] != temp)
+				swap(numbers[i], numbers[temp]);
+			else {
+				*duplication = numbers[i];
+				return true;
+			}
+		}
+		else
+			++i;
 	}
 	return false;
 }
@@ -90,10 +107,8 @@ void reOrderArray(vector<int> &array) {
 		return;
 	for (int i = len - 1; i > 0; --i)
 		for (int j = 0; j < i; ++j) {
-			if ((array[j] & 0x1 == 0) && (array[j + 1] & 0x1 == 1)) {
-				int temp = array[j];
-				array[j] = array[j + 1];
-				array[j + 1] = temp;
+			if (((array[j] & 0x1) == 0) && ((array[j + 1] & 0x1) == 1)) { //==和!= > & > &&
+				swap(array[j], array[j + 1]);
 			}
 		}
 }
@@ -113,9 +128,7 @@ void reOrderArray1(vector<int> &array, bool(*func)(int) {
 		while (right > left && !func(array[right]))
 			right--;
 		if (right > left) {
-			int temp = array[left];
-			array[left] = array[right];
-			array[right] = temp;
+			swap(array[left], array[right]);
 		}
 	}
 }
@@ -201,7 +214,6 @@ int Partition(vector<int>& numbers, int left, int right) {
 }
 int MoreThanHalfNum_Solution2(vector<int> numbers) {
 	int len = numbers.size();
-
 	if (len == 0)
 		return 0;
 	int seq = 0, expectSeq = len / 2, left = 0, right = len - 1, result;
@@ -217,7 +229,7 @@ int MoreThanHalfNum_Solution2(vector<int> numbers) {
 			right = seq - 1;
 	}
 	int count = 0;
-	for (int i = 0; i < len; ++i) {
+	for (int i = 0; i < len; ++i) { //可能并没有出现次数超过一半的数字，所以要检查
 		if (result == numbers[i])
 			count++;
 	}
@@ -289,6 +301,7 @@ vector<int> GetLeastNumbers_Solution2(vector<int> input, int k) {
 //面试题41：数据流中的中位数
 //维护一个大根堆、一个小根堆；小根堆中的数都大于等于大根堆中的数
 //依次使得小根堆、大根堆的元素个数加1
+//用push_heap, pop_heap
 class Solution41 {
 public:
 	void Insert(int num)
@@ -317,7 +330,6 @@ public:
 			push_heap(max.begin(), max.end(), less<int>());
 		}
 	}
-
 	double GetMedian()
 	{
 		double medium;
@@ -328,12 +340,43 @@ public:
 		else
 			medium = ((double)max[0] + (double)min[0]) / 2;//先转出double再计算
 		return medium;
-
 	}
 private:
 	vector<int> max;
 	vector<int> min;
-
+};
+//用priority_queue
+class Solution41 {
+public:
+	void Insert(int num)
+	{
+		if ((maxHeap.size() + minHeap.size() & 1) == 1) { //插入右边
+			if (maxHeap.size() && num < maxHeap.top()) {
+				maxHeap.push(num);
+				num = maxHeap.top();
+				maxHeap.pop();
+			}
+			minHeap.push(num);
+		}
+		else {
+			if (minHeap.size() > 0 && num > minHeap.top()) {
+				minHeap.push(num);
+				num = minHeap.top();
+				minHeap.pop();
+			}
+			maxHeap.push(num);
+		}
+	}
+	double GetMedian()
+	{
+		if ((maxHeap.size() + minHeap.size() & 1) == 0)
+			return ((double)maxHeap.top() + minHeap.top()) / 2;
+		else
+			return maxHeap.top();
+	}
+private:
+	priority_queue<int> maxHeap;  //左边
+	priority_queue<int, vector<int>, greater<int>> minHeap;  //右边
 };
 
 //面试题42：连续子数组的最大和
@@ -352,7 +395,7 @@ int FindGreatestSumOfSubArray(vector<int> array) {
 	}
 	return maxSum;
 }
-/*-------------------------字符串----------------------------*/
+/*-------------------------分类2：字符串----------------------------*/
 
 //面试题5：替换空格
 //length表示str指向的内存可以存放char的个数。从后向前复制，用两个指针
@@ -700,7 +743,7 @@ int StrToInt(string str) {
 	return result;
 }
 
-/*-------------------------链表----------------------------*/
+/*-------------------------分类3：链表----------------------------*/
 
 struct ListNode {
 	int val;
@@ -1085,7 +1128,7 @@ int LastRemaining_Solution(int n, int m)
 	}
 	return *l.begin();
 }
-/*-------------------------二叉树----------------------------*/
+/*-------------------------分类4：二叉树----------------------------*/
 
 //面试题7：根据前序遍历和中序遍历序列重建二叉树
 //前序遍历，中序遍历：根节点在前序遍历的首位，找出根节点在中序遍历中所在的位置
@@ -1564,7 +1607,7 @@ public:
 		return result;
 	}
 };
-/*-------------------------栈和队列----------------------------*/
+/*-------------------------分类5：栈和队列----------------------------*/
 
 //面试题9：用两个栈实现队列
 //压入栈1，从栈2弹出
@@ -1693,7 +1736,7 @@ private:
 }
 
 
-/*-------------------------递归和循环----------------------------*/
+/*-------------------------分类6：递归和循环----------------------------*/
 
 //面试题10：斐波那契数列
 //递归解法由于有很多重复计算，效率很低
@@ -1755,7 +1798,7 @@ int NthNum(int n) {
 		return -1;
 	int count = 1;
 	while (true) {
-		int numOfCount = 9 * pow(10, count - 1);//有count位的数字一共占多少位
+		int numOfCount = count==1 ? 10 : 9 * pow(10, count - 1);//有count位的数字一共占多少位
 		if (numOfCount > n) {
 			return NthNumCore(count, n);
 		}
@@ -1766,14 +1809,16 @@ int NthNum(int n) {
 	}
 }
 
-/*-------------------------查找和排序----------------------------*/
+/*-------------------------分类7：查找和排序----------------------------*/
 
 //面试题11：旋转数组的最小数字
 int minSearchInorder(vector<int>& rotateArray, int left, int right) {
 	int min = rotateArray[left];
 	for (int i = left + 1; i <= right; ++i) {
-		if (rotateArray[i] < min)
+		if (rotateArray[i] < min) {
 			min = rotateArray[i];
+			break;
+		}		
 	}
 	return min;
 }
@@ -1802,15 +1847,11 @@ void MergeCount(vector<int>& data, const int& left, const int& mid, const int& r
 	while (P1 >= 0 && P2 > mid - left) {
 		if (copy[P1] > copy[P2]) {
 			pairs += rightLen;
-			data[P3] = copy[P1];
-			P1--;
-			P3--;
+			data[P3--] = copy[P1--];
 		}
 		else {
-			data[P3] = copy[P2];
-			P2--;
+			data[P3--] = copy[P2--];
 			rightLen--;
-			P3--;
 		}
 	}
 	while (P1 >= 0) {
@@ -2056,7 +2097,7 @@ bool IsContinuous(vector<int> numbers) {
 	return numOf0 >= numOfBreak ? true : false;
 }
 
-/*-------------------------回溯法----------------------------*/
+/*-------------------------分类8：回溯法----------------------------*/
 
 //面试题12：矩阵中的路径
 //当在矩阵中定位了路径中前n个字符的位置之后，在与第n个字符对应的格子的周围都没有找到第n+1个字符，这时候只好在路径上回到第n-1个字符
@@ -2130,7 +2171,7 @@ int movingCount(const int& threshold, const int& rows, const int& cols) {
 	return count;
 }
 
-/*-------------------------动态规划与贪婪算法----------------------------*/
+/*-------------------------分类9：动态规划与贪婪算法----------------------------*/
 
 //面试题14：剪绳子(动态规划)
 //f(n)=f(i)*f(n-i)，从下到上算
@@ -2366,10 +2407,11 @@ int MaxDiff(const vector<int>& prices) {
 	}
 	return diff;
 }
-/*-------------------------位运算----------------------------*/
+/*-------------------------分类10：位运算----------------------------*/
 
 //面试题15：二进制中1的个数
-//把1个整数减去1再与原来的数做&运算，会把最右边的1变成0，整数中有几个1就循环几次
+//思路1：flag=1,n&flag,flag=flag<<1;要循环32次
+//思路2：把1个整数减去1再与原来的数做&运算，会把最右边的1变成0，整数中有几个1就循环几次
 int  NumberOf1(int n) {
 	int count = 0;
 	while (n) {
@@ -2379,7 +2421,7 @@ int  NumberOf1(int n) {
 	return count;
 }
 //面试题56：数组中只出现一次的两个数字，其他数字都出现两次
-//如果数组中只有一个数字出现一次，其他数字都出现两次，那么可以通过异或操作找到这个数组
+//如果数组中只有一个数字出现一次，其他数字都出现两次，那么可以通过异或操作找到这个数字
 //推广到有两个数字出现一次的情况，可以把这个数字分为两个数组，每个数组都只有一个数字出现一次
 void FindNumsAppearOnce(vector<int> data, int* num1, int *num2) {
 	int mark = 0;
@@ -2389,6 +2431,8 @@ void FindNumsAppearOnce(vector<int> data, int* num1, int *num2) {
 	while ((mark & temp) == 0) {  //通过mark从右边数第一位是否为0分割数组
 		temp = temp << 1;
 	}
+	*num1 = 0;
+	*num2 = 0;
 	for (auto& i : data) {
 		if ((i&temp) == 0)
 			*num1 = (*num1) ^ i;
@@ -2411,7 +2455,7 @@ int FindNumAppearOnce(vector<int> nums) {
 	}
 	int ans = 0;
 	for (int i = 31; i >= 0; --i) {
-		ans = ans << 1;
+		ans = ans << 1;  //注意这两句的顺序
 		ans += (mark[i] % 3);
 	}
 	return ans;
@@ -2428,7 +2472,7 @@ int Add(int num1, int num2)
 	} while (carry != 0);
 	return sum;
 }
-/*-------------------------代码的完整性----------------------------*/
+/*-------------------------分类11：代码的完整性----------------------------*/
 
 //面试题16：数值的整数次方（不得使用库函数，不考虑大数问题）
 //非法输入：底数是0，指数是负数。可以用返回值、全局变量、异常告诉调用者出现了错误
@@ -2463,7 +2507,7 @@ double Power(double base, int exponent) {
 }
 
 
-//--------------空间换时间--------------------
+//--------------分类12：空间换时间--------------------
 //面试题49：丑数
 int GetUglyNumber_Solution(int index) {
 	if (index == 1)
@@ -2530,7 +2574,7 @@ int FirstNotRepeatingCharInStream(const string& str) {
 	return minIndex;
 }
 
-/*--------------------------数学分析和建模------------------------------*/
+/*--------------------------分类13：数学分析和建模------------------------------*/
 //面试题60：n个骰子的点数
 void printProbility(int number) {
 	if (number < 1)
@@ -2585,7 +2629,7 @@ vector<int> multiply(const vector<int>& A) {
 }
 
 
-/*--------------------创新解法-------------------------------------*/
+/*--------------------分类14：创新解法-------------------------------------*/
 
 //面试题64：求1+2+...+n，要求不能用乘除法，不能用for、while、if、else、switch、case等关键字及条件判断语句
 //解法1：利用类的静态成员和类的构造函数
