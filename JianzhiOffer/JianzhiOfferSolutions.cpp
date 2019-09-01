@@ -1040,34 +1040,7 @@ RandomListNode* Clone(RandomListNode* pHead)
 	return SplitChain(pHead);
 }
 
-//面试题36：二叉搜索树与双向链表
-//递归
-struct TreeNode {
-	int val;
-	TreeNode* left;
-	TreeNode* right;
-	TreeNode(int v) :val(v), left(nullptr), right(nullptr) {}
-};
-void ConvertCore(TreeNode* pCurrent, TreeNode** pLastNodeInList) {
-	if (pCurrent->left != nullptr)
-		ConvertCore(pCurrent->left, pLastNodeInList);
-	pCurrent->left = *pLastNodeInList;
-	if (*pLastNodeInList != nullptr)
-		(*pLastNodeInList)->right = pCurrent;
-	*pLastNodeInList = pCurrent;
-	if (pCurrent->right != nullptr)
-		ConvertCore(pCurrent->right, pLastNodeInList);
-}
-TreeNode* Convert(TreeNode* pRootOfTree) {
-	if (pRootOfTree == nullptr)
-		return nullptr;
-	TreeNode* pLastNodeInList = nullptr;
-	ConvertCore(pRootOfTree, &pLastNodeInList);
-	
-	while (pLastNodeInList->left != nullptr)
-		pLastNodeInList = pLastNodeInList->left;
-	return pLastNodeInList;
-}
+
 
 //面试题52：两个链表的第一个公共节点
 //首先得到两个链表的长度，以及长度差x；在较长的链表上先走x步，然后一起走，那么第一个相同的节点就是公共节点
@@ -1438,6 +1411,34 @@ vector<vector<int> > FindPath(TreeNode* root, int expectNumber) {
 	int curSum = 0;
 	findPathCore(root, curSum, expectNumber, re, result);
 	return result;
+}
+
+//面试题36：二叉搜索树与双向链表
+//递归
+struct TreeNode {
+	int val;
+	TreeNode* left;
+	TreeNode* right;
+	TreeNode(int v) :val(v), left(nullptr), right(nullptr) {}
+};
+void ConvertCore(TreeNode* pCurrent, TreeNode** pLastNodeInList) {
+	if (pCurrent->left != nullptr)
+		ConvertCore(pCurrent->left, pLastNodeInList);
+	pCurrent->left = *pLastNodeInList;
+	if (*pLastNodeInList != nullptr)
+		(*pLastNodeInList)->right = pCurrent;
+	*pLastNodeInList = pCurrent;
+	if (pCurrent->right != nullptr)
+		ConvertCore(pCurrent->right, pLastNodeInList);
+}
+TreeNode* Convert(TreeNode* pRootOfTree) {
+	if (pRootOfTree == nullptr)
+		return nullptr;
+	TreeNode* pLastNodeInList = nullptr;
+	ConvertCore(pRootOfTree, &pLastNodeInList);
+	while (pLastNodeInList->left != nullptr)
+		pLastNodeInList = pLastNodeInList->left;
+	return pLastNodeInList;
 }
 	
 
