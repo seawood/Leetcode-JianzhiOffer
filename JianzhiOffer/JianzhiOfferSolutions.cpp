@@ -1209,7 +1209,26 @@ TreeLinkNode* GetNext2(TreeLinkNode* pNode) {
 	} else
 		return nullptr;
 }
-
+//重构
+TreeLinkNode* GetNext3(TreeLinkNode* pNode) {
+	if (pNode == nullptr)
+		return nullptr;
+	if (pNode->right != nullptr) {
+		TreeLinkNode* walk = pNode->right;
+		while (walk->left != nullptr)
+			walk = walk->left;
+		return walk;
+	}
+	else {
+		TreeLinkNode* parent = pNode->next;
+		TreeLinkNode* current = pNode;
+		while (parent != nullptr && parent->right == current) {
+			current = parent;
+			parent = parent->next;
+		}
+		return parent;
+	}
+}
 //面试题26：树的子结构
 bool Tree1HasTree2(TreeNode* pRoot1, TreeNode* pRoot2) {
 	if (pRoot2 == nullptr)
