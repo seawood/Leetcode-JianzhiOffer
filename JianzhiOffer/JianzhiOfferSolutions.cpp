@@ -2195,6 +2195,7 @@ int movingCount(const int& threshold, const int& rows, const int& cols) {
 
 //面试题14：剪绳子(动态规划)
 //f(n)=f(i)*f(n-i)，从下到上算
+//时间复杂度O(n^2),空间复杂度O(n)
 int maxProductAfterCutting(int length) {
 	if (length < 2)
 		return 0;
@@ -2203,7 +2204,7 @@ int maxProductAfterCutting(int length) {
 	if (length == 3)
 		return 2;
 	int* re = new int[length + 1];
-	re[0] = 0;
+	re[0] = 0; // 为了长度和下标对齐，有用的下标从1开始
 	re[1] = 1;
 	re[2] = 2;
 	re[3] = 3; //不切分比切分要大
@@ -2291,6 +2292,7 @@ public:
 };
 
 //面试题47：礼物的最大价值
+//需要一个二维数组保存中间结果
 int MaxPresentsValue1(const vector<vector<int>>& present) {
 	int row = present.size();
 	if (row == 0)
@@ -2299,7 +2301,6 @@ int MaxPresentsValue1(const vector<vector<int>>& present) {
 	int** re = new int*[row];
 	for (int i = 0; i < row; ++i)
 		re[i] = new int[col];
-
 	for (int i = 0; i < row; ++i)
 		for (int j = 0; j < col; ++j) {
 			int left = 0, up = 0;
@@ -2315,6 +2316,7 @@ int MaxPresentsValue1(const vector<vector<int>>& present) {
 	delete[] re;
 	return result;
 }
+//优化：只需要一个一维数组保存中间结果，这个一维数组的前面j个元素已经更新过了，后面col-j个元素还没更新（属于上一行）
 int MaxPresentsValue2(const vector<vector<int>>& present) {
 	int rows = present.size();
 	if (rows == 0)
@@ -2391,6 +2393,8 @@ int longestSubstringWithoutDuplicate2(const string& s) { // 只需要保存前面一个记
 	}
 	return longest;
 }
+//maxLen记录了以第i个字符为结尾的不包含重复字符的子字符串的最大长度
+//res记录所有maxLen的最大值
 int lengthOfLongestSubstring3(string s) {
 	int len = s.size();
 	if (len == 0)
@@ -2416,16 +2420,12 @@ int MaxDiff(const vector<int>& prices) {
 	int len = prices.size();
 	if (len < 2)
 		return 0;
-	int minPrice = prices[0];
-	int diff = prices[1] - prices[0];
-	for (int i = 2; i < len; ++i) {
-		if (prices[i - 1] < minPrice)
-			minPrice = prices[i - 1];
-		int currentDiff = prices[i] - minPrice;
-		if (currentDiff > diff)
-			diff = currentDiff;
+	int minPrice = prices[0], re = 0;
+	for (int i = 1; i < len; ++i) {
+		re = max(re, prices[i] - minPrice);
+		minPrice = min(minPrice, prices[i]);
 	}
-	return diff;
+	return re;
 }
 /*-------------------------分类10：位运算----------------------------*/
 
