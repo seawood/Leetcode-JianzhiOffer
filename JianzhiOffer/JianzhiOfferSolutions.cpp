@@ -1512,7 +1512,7 @@ TreeNode* KthNode(TreeNode* pRoot, int k)
 }
 
 //面试题55：二叉树的深度
-//解法1：递归
+//解法1：二叉树的深度递归版本
 int TreeDepth1(TreeNode* pRoot)
 {
 	if (pRoot == nullptr)
@@ -1521,7 +1521,7 @@ int TreeDepth1(TreeNode* pRoot)
 	int right = TreeDepth(pRoot->right);
 	return left > right ? left + 1 : right + 1;
 }
-//解法2：层次遍历
+//解法2：二叉树的深度层次遍历
 int TreeDepth2(TreeNode* pRoot)
 {
 	if (pRoot == nullptr)
