@@ -944,6 +944,7 @@ ListNode* ReverseList(ListNode* pHead) {
 	return walk;
 }
 //面试题25：合并两个排序的链表
+//递归
 ListNode* Merge(ListNode* pHead1, ListNode* pHead2) {
 	if (pHead1 == nullptr)
 		return pHead2;
@@ -1039,8 +1040,6 @@ RandomListNode* Clone(RandomListNode* pHead)
 	CloneRandom(pHead);
 	return SplitChain(pHead);
 }
-
-
 
 //面试题52：两个链表的第一个公共节点
 //首先得到两个链表的长度，以及长度差x；在较长的链表上先走x步，然后一起走，那么第一个相同的节点就是公共节点
