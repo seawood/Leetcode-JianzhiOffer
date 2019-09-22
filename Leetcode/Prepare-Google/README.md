@@ -1,2 +1,3 @@
 - :chicken:[140.Word Break II](https://github.com/seawood/Leetcode-JianzhiOffer/blob/master/Leetcode/Prepare-Google/140.Word%20Break%20II.cpp): DFS+剪枝
-- :handbag:[Lintcode 92.Backpack](https://github.com/seawood/Leetcode-JianzhiOffer/blob/master/Leetcode/Prepare-Google/Lintcode%2092.Backpack.cpp):0-1背包问题(动态规划+空间优化)
+- :handbag:[Lintcode 92.Backpack](https://github.com/seawood/Leetcode-JianzhiOffer/blob/master/Leetcode/Prepare-Google/Lintcode%2092.Backpack.cpp):0-1背包无价值（动态规划+空间优化）
+- :handbag:[Lintcode 125.Backpack II]():0-1背包有价值（动态规划+空间优化）

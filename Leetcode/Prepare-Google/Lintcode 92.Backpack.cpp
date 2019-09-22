@@ -1,4 +1,4 @@
-//0-1背包：动态规划
+//0-1背包无价值：动态规划
 //Lintcode 92.Backpack: https://www.lintcode.com/problem/backpack/description
 //时间复杂度O(n*m),空间复杂度O(n*m)
 
