@@ -21,3 +21,15 @@ int backPackIII(int m, vector<int> &A, vector<int> &V) {
 	delete[] current;
 	return result;
 }
+
+int backPack(int m, vector<int> &A, vector<int> &V){
+    int len = A.size();
+    vector<int> record(m+1, 0);
+    for(int i = 0; i < len; ++i){
+        for(int j = 0; j <= m; ++j){
+            if(j-A[i] >= 0 && record[j-A[i]]+V[i] > record[j])
+                record[j] = record[j-A[i]]+V[i];
+        }
+    }
+    return record[m];
+}

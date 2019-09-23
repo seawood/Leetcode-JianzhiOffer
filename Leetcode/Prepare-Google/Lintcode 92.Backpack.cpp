@@ -2,6 +2,11 @@
 //Lintcode 92.Backpack: https://www.lintcode.com/problem/backpack/description
 //时间复杂度O(n*m),空间复杂度O(n*m)
 
+//0-1背包问题：每个数字只能用一次，不超过m的最大和是多少
+//输入[3,4,8,5] 10
+//输出9
+//f(n,m) = max(f(n-1,m), f(n-1,m-A[n])+A[n])
+
 int backPack(int m, vector<int> &A) {
     int len = A.size();
     if(len == 0)
