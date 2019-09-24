@@ -1,5 +1,8 @@
+- :memo:[Leetcode 139. Word Break]():动态规划
 - :chicken:[Leetcode 140.Word Break II](https://github.com/seawood/Leetcode-JianzhiOffer/blob/master/Leetcode/Prepare-Google/140.Word%20Break%20II.cpp): DFS+剪枝
 - :handbag:[Lintcode 92.Backpack](https://github.com/seawood/Leetcode-JianzhiOffer/blob/master/Leetcode/Prepare-Google/Lintcode%2092.Backpack.cpp):0-1背包无价值（动态规划+空间优化）
 - :handbag:[Lintcode 125.Backpack II](https://github.com/seawood/Leetcode-JianzhiOffer/blob/master/Leetcode/Prepare-Google/Lintcode%20125.Backpack%20II.cpp):0-1背包有价值（动态规划+空间优化）
 - :handbag:[Lintcode 440.Backpack III]():完全背包问题有价值（动态规划+空间优化）
+- :handbag:[Lintcode .Backpack IV]()
 - :handbag:[Leetcode 322.Coin Change](https://github.com/seawood/Leetcode-JianzhiOffer/blob/master/Leetcode/Prepare-Google/Leetcode%20322.Coin%20Change.cpp)
+- :dart:[Niuke. Maze]()：递归
